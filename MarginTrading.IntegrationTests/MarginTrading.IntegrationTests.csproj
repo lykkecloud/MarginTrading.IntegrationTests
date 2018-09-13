@@ -8,5 +8,25 @@
   <Target Name="CopyDevConfig" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Debug'">
     <Copy SourceFiles="appsettings.dev.json" DestinationFolder="$(OutDir)" ContinueOnError="true" />
   </Target>
-
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.4.1" />
+    <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
+    <PackageReference Include="Lykke.Common" Version="7.0.1" />
+    <PackageReference Include="Lykke.Cqrs" Version="4.8.0" />
+    <PackageReference Include="Lykke.HttpClientGenerator" Version="2.1.0" />
+    <PackageReference Include="Lykke.MarginTrading.AccountsManagement.Contracts" Version="1.4.0" />
+    <PackageReference Include="Lykke.MarginTrading.BackendSnow.Contracts" Version="1.3.1" />
+    <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.1.0" />
+    <PackageReference Include="Lykke.RabbitMqBroker" Version="7.1.0" />
+    <PackageReference Include="Lykke.SettingsReader" Version="2.4.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
+    <PackageReference Include="Moq" Version="4.8.3" />
+    <PackageReference Include="NUnit" Version="3.10.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
+  </ItemGroup>
 </Project>
