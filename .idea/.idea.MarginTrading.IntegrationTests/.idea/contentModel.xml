@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="$PROJECT_DIR$" t="IncludeFlat">
+      <e p="MarginTrading.IntegrationTests" t="IncludeRecursive">
+        <e p="appsettings.dev.json" t="Include" />
+        <e p="bin" t="ExcludeRecursive" />
+        <e p="Infrastructure" t="Include">
+          <e p="ClientUtil.cs" t="Include" />
+          <e p="CqrsUtil.cs" t="Include" />
+          <e p="RabbitMqService.cs" t="Include" />
+          <e p="RabbitUtil.cs" t="Include" />
+          <e p="SettingsUtil.cs" t="Include" />
+        </e>
+        <e p="MarginTrading.IntegrationTests.csproj" t="IncludeRecursive" />
+        <e p="obj" t="ExcludeRecursive">
+          <e p="Debug" t="Include">
+            <e p="netcoreapp2.1" t="Include">
+              <e p="MarginTrading.IntegrationTests.AssemblyInfo.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="Settings" t="Include">
+          <e p="AccountManagementServiceClientSettings.cs" t="Include" />
+          <e p="AccountManagementSettings.cs" t="Include" />
+          <e p="AppSettings.cs" t="Include" />
+          <e p="BehaviorSettings.cs" t="Include" />
+          <e p="CqrsContextNamesSettings.cs" t="Include" />
+          <e p="CqrsSettings.cs" t="Include" />
+          <e p="DbSettings.cs" t="Include" />
+          <e p="RabbitConnectionSettings.cs" t="Include" />
+          <e p="RabbitMqSettings.cs" t="Include" />
+        </e>
+        <e p="WorkflowTests" t="Include">
+          <e p="ChargeManuallyTests.cs" t="Include" />
+          <e p="CloseOrderTests.cs" t="Include" />
+          <e p="DepositTests.cs" t="Include" />
+          <e p="InitNamespace.cs" t="Include" />
+          <e p="Setup.cs" t="Include" />
+          <e p="TestsHelpers.cs" t="Include" />
+          <e p="WithdrawTests.cs" t="Include" />
+        </e>
+      </e>
+      <e p="MarginTrading.IntegrationTests.sln" t="IncludeFlat" />
+      <e p="packages" t="ExcludeRecursive" />
+    </e>
+    <e p="$USER_HOME$/Library/Caches/Rider2018.2/extResources" t="IncludeRecursive" />
+    <e p="$USER_HOME$/Library/Caches/Rider2018.2/resharper-host/local/Transient/ReSharperHost/v182/SolutionCaches/_MarginTrading.IntegrationTests.250999665.00" t="ExcludeRecursive" />
+    <e p="$APPLICATION_CONFIG_DIR$/extensions" t="IncludeRecursive" />
+  </component>
+</project>

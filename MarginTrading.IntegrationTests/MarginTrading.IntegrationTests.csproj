@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <AssemblyName>MarginTrading.IntegrationTests</AssemblyName>
+    <PackageId>MarginTrading.IntegrationTests</PackageId>
+  </PropertyGroup>
+  <Target Name="CopyDevConfig" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Debug'">
+    <Copy SourceFiles="appsettings.dev.json" DestinationFolder="$(OutDir)" ContinueOnError="true" />
+  </Target>
+
+</Project>
