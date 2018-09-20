@@ -43,7 +43,7 @@
           "lib/netstandard1.1/Autofac.Extensions.DependencyInjection.dll": {}
         }
       },
-      "Castle.Core/4.3.0": {
+      "Castle.Core/4.3.1": {
         "type": "package",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
@@ -108,7 +108,7 @@
           "lib/netstandard1.3/DnsClient.dll": {}
         }
       },
-      "FluentAssertions/5.4.1": {
+      "FluentAssertions/5.4.2": {
         "type": "package",
         "dependencies": {
           "System.Configuration.ConfigurationManager": "4.4.0"
@@ -120,16 +120,13 @@
           "lib/netcoreapp2.0/FluentAssertions.dll": {}
         }
       },
-      "JetBrains.Annotations/11.1.0": {
+      "JetBrains.Annotations/2018.2.1": {
         "type": "package",
-        "dependencies": {
-          "System.Runtime": "4.1.0"
-        },
         "compile": {
-          "lib/netstandard1.0/JetBrains.Annotations.dll": {}
+          "lib/netstandard2.0/JetBrains.Annotations.dll": {}
         },
         "runtime": {
-          "lib/netstandard1.0/JetBrains.Annotations.dll": {}
+          "lib/netstandard2.0/JetBrains.Annotations.dll": {}
         }
       },
       "libphonenumbers-dotnet/1.1.0": {
@@ -227,13 +224,13 @@
           "lib/netstandard2.0/Lykke.HttpClientGenerator.dll": {}
         }
       },
-      "Lykke.MarginTrading.AccountsManagement.Contracts/1.4.0": {
+      "Lykke.MarginTrading.AccountsManagement.Contracts/1.6.0": {
         "type": "package",
         "dependencies": {
           "JetBrains.Annotations": "11.1.0",
           "MessagePack": "1.7.3.4",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "2.1.0",
-          "Refit": "4.5.6",
+          "Refit": "4.6.30",
           "System.Collections.Immutable": "1.5.0"
         },
         "compile": {
@@ -243,7 +240,7 @@
           "lib/netstandard2.0/MarginTrading.AccountsManagement.Contracts.dll": {}
         }
       },
-      "Lykke.MarginTrading.BackendSnow.Contracts/1.3.1": {
+      "Lykke.MarginTrading.BackendSnow.Contracts/1.5.0": {
         "type": "package",
         "dependencies": {
           "JetBrains.Annotations": "11.1.0",
@@ -252,7 +249,7 @@
           "Microsoft.Extensions.PlatformAbstractions": "1.1.0",
           "Polly": "6.0.1",
           "Polly.Caching.MemoryCache": "1.1.0",
-          "Refit": "4.5.6",
+          "Refit": "4.6.30",
           "System.Collections.Immutable": "1.5.0",
           "System.Reflection.DispatchProxy": "4.5.0"
         },
@@ -2102,12 +2099,13 @@
           "lib/netstandard1.5/MongoDB.Driver.Core.dll": {}
         }
       },
-      "Moq/4.8.3": {
+      "Moq/4.10.0": {
         "type": "package",
         "dependencies": {
-          "Castle.Core": "4.3.0",
+          "Castle.Core": "4.3.1",
           "NETStandard.Library": "1.6.1",
           "System.Linq.Queryable": "4.3.0",
+          "System.Reflection.Emit": "4.3.0",
           "System.Reflection.TypeExtensions": "4.3.0",
           "System.Threading.Tasks.Extensions": "4.3.0",
           "System.ValueTuple": "4.4.0"
@@ -2277,7 +2275,7 @@
           "lib/netstandard1.5/RabbitMQ.Client.dll": {}
         }
       },
-      "Refit/4.5.6": {
+      "Refit/4.6.30": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "11.0.2"
@@ -4647,15 +4645,15 @@
         "lib/netstandard1.1/Autofac.Extensions.DependencyInjection.xml"
       ]
     },
-    "Castle.Core/4.3.0": {
-      "sha512": "HPJ63Q8ilYu7Ts9Kxil6h2Mldegs4uNZWJjPzLedFrFZr34mHnW3w7+y2V1ZN8R1ccve7EcN1CqejIn9Svv2YA==",
+    "Castle.Core/4.3.1": {
+      "sha512": "8Y/eTr6GTElAGV7eAmJuhfLhGdFpNvaNrQ9UQYDScziLmX+/BLGM+9eQr0IcdNDcPN0ADmbtwT6MgecGKy4obw==",
       "type": "package",
-      "path": "castle.core/4.3.0",
+      "path": "castle.core/4.3.1",
       "files": [
         "ASL - Apache Software Foundation License.txt",
         "CHANGELOG.md",
         "LICENSE",
-        "castle.core.4.3.0.nupkg.sha512",
+        "castle.core.4.3.1.nupkg.sha512",
         "castle.core.nuspec",
         "lib/net35/Castle.Core.dll",
         "lib/net35/Castle.Core.xml",
@@ -4699,12 +4697,13 @@
         "lib/netstandard1.3/DnsClient.xml"
       ]
     },
-    "FluentAssertions/5.4.1": {
-      "sha512": "ftwjDaILOT2HUVykOWJ2FhAbPo3PUDqydbd3g3flGT9FviKnAFKxCAEaZQi4gJV/mNFij2jLS2LblTYhj0/32g==",
+    "FluentAssertions/5.4.2": {
+      "sha512": "ZhinGnIVyJvos6VOXegxDltPiuVOMgysxV+ADt4qqZn0I2AOsU5r8R/L02tV6kPeUX9DkzjEPrd3rGhL0bCYUQ==",
       "type": "package",
-      "path": "fluentassertions/5.4.1",
+      "path": "fluentassertions/5.4.2",
       "files": [
-        "fluentassertions.5.4.1.nupkg.sha512",
+        ".signature.p7s",
+        "fluentassertions.5.4.2.nupkg.sha512",
         "fluentassertions.nuspec",
         "lib/net45/FluentAssertions.dll",
         "lib/net45/FluentAssertions.pdb",
@@ -4726,20 +4725,21 @@
         "lib/netstandard2.0/FluentAssertions.xml"
       ]
     },
-    "JetBrains.Annotations/11.1.0": {
-      "sha512": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA==",
+    "JetBrains.Annotations/2018.2.1": {
+      "sha512": "/aPVHEW93EV1Httnbniz0Cty5+jrXobS27I8QBnIUMe0n51qgxLyQV2AQNko4yXkeOxEdWiZ7bg9+BuMxYbXcA==",
       "type": "package",
-      "path": "jetbrains.annotations/11.1.0",
+      "path": "jetbrains.annotations/2018.2.1",
       "files": [
-        "jetbrains.annotations.11.1.0.nupkg.sha512",
+        "jetbrains.annotations.2018.2.1.nupkg.sha512",
         "jetbrains.annotations.nuspec",
         "lib/net20/JetBrains.Annotations.dll",
         "lib/net20/JetBrains.Annotations.xml",
         "lib/netstandard1.0/JetBrains.Annotations.deps.json",
         "lib/netstandard1.0/JetBrains.Annotations.dll",
         "lib/netstandard1.0/JetBrains.Annotations.xml",
-        "lib/portable40-net40+sl4+win8+wp7/JetBrains.Annotations.dll",
-        "lib/portable40-net40+sl4+win8+wp7/JetBrains.Annotations.xml",
+        "lib/netstandard2.0/JetBrains.Annotations.deps.json",
+        "lib/netstandard2.0/JetBrains.Annotations.dll",
+        "lib/netstandard2.0/JetBrains.Annotations.xml",
         "lib/portable40-net40+sl5+win8+wp8+wpa81/JetBrains.Annotations.dll",
         "lib/portable40-net40+sl5+win8+wp8+wpa81/JetBrains.Annotations.xml"
       ]
@@ -4801,25 +4801,26 @@
         "lykke.httpclientgenerator.nuspec"
       ]
     },
-    "Lykke.MarginTrading.AccountsManagement.Contracts/1.4.0": {
-      "sha512": "rUOX+tjasjaJHWf3F2+bPwtyOb99UatM/LvYoqkQ1KZySZAneluNSEaibH/uZ4Pw6JPQdIf7RHYvc+JVD6CElw==",
+    "Lykke.MarginTrading.AccountsManagement.Contracts/1.6.0": {
+      "sha512": "5/cGDDzorxW72UDjXsxcAw4aRhNwZaZdUJG8PLOLgOSIKCqE8w9eQTDUax+0PA8Q0Os81dG6m0+Gsv5/Ep1Q8g==",
       "type": "package",
-      "path": "lykke.margintrading.accountsmanagement.contracts/1.4.0",
+      "path": "lykke.margintrading.accountsmanagement.contracts/1.6.0",
       "files": [
         "lib/netstandard2.0/MarginTrading.AccountsManagement.Contracts.dll",
         "lib/netstandard2.0/MarginTrading.AccountsManagement.Contracts.xml",
-        "lykke.margintrading.accountsmanagement.contracts.1.4.0.nupkg.sha512",
+        "lykke.margintrading.accountsmanagement.contracts.1.6.0.nupkg.sha512",
         "lykke.margintrading.accountsmanagement.contracts.nuspec"
       ]
     },
-    "Lykke.MarginTrading.BackendSnow.Contracts/1.3.1": {
-      "sha512": "5TJSi2gWgFkO9qA7lv3wNpPkSdFX7mxzeZ68nCqzc5X/2WVOKha3zqllYxWooD5A7ZXiNA2rM8uRMzp11QKSDA==",
+    "Lykke.MarginTrading.BackendSnow.Contracts/1.5.0": {
+      "sha512": "0gcXnRuK7j7OeFkgS9/dih0K8OJoEjJzlrNpFVIVao49TCfzQsFrdvLuOsct/USsC7X+isEkFbGNwSyedWxP3g==",
       "type": "package",
-      "path": "lykke.margintrading.backendsnow.contracts/1.3.1",
+      "path": "lykke.margintrading.backendsnow.contracts/1.5.0",
       "files": [
+        ".signature.p7s",
         "lib/netstandard2.0/MarginTrading.Backend.Contracts.dll",
         "lib/netstandard2.0/MarginTrading.Backend.Contracts.xml",
-        "lykke.margintrading.backendsnow.contracts.1.3.1.nupkg.sha512",
+        "lykke.margintrading.backendsnow.contracts.1.5.0.nupkg.sha512",
         "lykke.margintrading.backendsnow.contracts.nuspec"
       ]
     },
@@ -6703,18 +6704,19 @@
         "mongodb.driver.core.nuspec"
       ]
     },
-    "Moq/4.8.3": {
-      "sha512": "xu96rkw2M10SspzWJYDoIShRDbfgTq6fJ+rfDRH98psg7z1dsoqkf1vx+8+hunhGE0q4F9M5io6gVeM99Y5Zzw==",
+    "Moq/4.10.0": {
+      "sha512": "/ZAm+Pk17O7BSEVV/ufq23ph8h6TPdUH4ROwdzMmZUM0L2b8V8ql6jFB7vH1+x1ZOdm6nc6aMis4JzGqXvEk0A==",
       "type": "package",
-      "path": "moq/4.8.3",
+      "path": "moq/4.10.0",
       "files": [
+        ".signature.p7s",
         "lib/net45/Moq.dll",
         "lib/net45/Moq.pdb",
         "lib/net45/Moq.xml",
         "lib/netstandard1.3/Moq.dll",
         "lib/netstandard1.3/Moq.pdb",
         "lib/netstandard1.3/Moq.xml",
-        "moq.4.8.3.nupkg.sha512",
+        "moq.4.10.0.nupkg.sha512",
         "moq.nuspec"
       ]
     },
@@ -7057,10 +7059,10 @@
         "rabbitmq.client.nuspec"
       ]
     },
-    "Refit/4.5.6": {
-      "sha512": "YJCKmbt/scLyuT25zvONFr/1GJJwEOV44ojJ85Etys1EvwB8O79CZZTkBafRVO1BFgVdC1VDmI0hZNy6v3CoLg==",
+    "Refit/4.6.30": {
+      "sha512": "rl/zMFd4sZqQSERIFi3qMVPShQoB9FUfsO9gq+JUK7jNdbYmTH1xjB7W7TBAFbC+lgZEbLHG4NJ8FR5x0VRW+g==",
       "type": "package",
-      "path": "refit/4.5.6",
+      "path": "refit/4.6.30",
       "files": [
         ".signature.p7s",
         "build/MSBuildCore20/GeneratedInterfaceStubTemplate.mustache",
@@ -7127,7 +7129,7 @@
         "lib/netstandard1.4/Refit.xml",
         "lib/netstandard2.0/Refit.dll",
         "lib/netstandard2.0/Refit.xml",
-        "refit.4.5.6.nupkg.sha512",
+        "refit.4.6.30.nupkg.sha512",
         "refit.nuspec"
       ]
     },
@@ -12800,13 +12802,13 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.1": [
-      "FluentAssertions >= 5.4.1",
-      "JetBrains.Annotations >= 11.1.0",
+      "FluentAssertions >= 5.4.2",
+      "JetBrains.Annotations >= 2018.2.1",
       "Lykke.Common >= 7.0.1",
       "Lykke.Cqrs >= 4.8.0",
       "Lykke.HttpClientGenerator >= 2.1.0",
-      "Lykke.MarginTrading.AccountsManagement.Contracts >= 1.4.0",
-      "Lykke.MarginTrading.BackendSnow.Contracts >= 1.3.1",
+      "Lykke.MarginTrading.AccountsManagement.Contracts >= 1.6.0",
+      "Lykke.MarginTrading.BackendSnow.Contracts >= 1.5.0",
       "Lykke.Messaging.RabbitMq >= 2.1.0",
       "Lykke.RabbitMqBroker >= 7.1.0",
       "Lykke.SettingsReader >= 2.4.1",
@@ -12817,7 +12819,7 @@
       "Microsoft.Extensions.Configuration.Json >= 2.1.1",
       "Microsoft.NET.Test.Sdk >= 15.7.2",
       "Microsoft.NETCore.App >= 2.1.0",
-      "Moq >= 4.8.3",
+      "Moq >= 4.10.0",
       "NUnit >= 3.10.1",
       "NUnit3TestAdapter >= 3.10.0"
     ]
@@ -12864,11 +12866,11 @@
         "dependencies": {
           "FluentAssertions": {
             "target": "Package",
-            "version": "[5.4.1, )"
+            "version": "[5.4.2, )"
           },
           "JetBrains.Annotations": {
             "target": "Package",
-            "version": "[11.1.0, )"
+            "version": "[2018.2.1, )"
           },
           "Lykke.Common": {
             "target": "Package",
@@ -12884,11 +12886,11 @@
           },
           "Lykke.MarginTrading.AccountsManagement.Contracts": {
             "target": "Package",
-            "version": "[1.4.0, )"
+            "version": "[1.6.0, )"
           },
           "Lykke.MarginTrading.BackendSnow.Contracts": {
             "target": "Package",
-            "version": "[1.3.1, )"
+            "version": "[1.5.0, )"
           },
           "Lykke.Messaging.RabbitMq": {
             "target": "Package",
@@ -12934,7 +12936,7 @@
           },
           "Moq": {
             "target": "Package",
-            "version": "[4.8.3, )"
+            "version": "[4.10.0, )"
           },
           "NUnit": {
             "target": "Package",

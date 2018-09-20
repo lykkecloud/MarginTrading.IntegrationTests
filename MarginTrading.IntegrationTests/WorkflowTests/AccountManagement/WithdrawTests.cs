@@ -16,29 +16,20 @@ namespace MarginTrading.IntegrationTests.WorkflowTests.AccountManagement
         public async Task IfEnoughBalance_ShouldWithdraw()
         {
             // arrange
-            await TestsHelpers.EnsureAccountState(needBalance: 123);
+            await TestsHelpers.EnsureAccountState(neededBalance: 123M);
 
             // act
-
-            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(TestsHelpers.ClientId,
-                TestsHelpers.AccountId,
-                new AccountChargeManuallyRequest
+            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(TestsHelpers.AccountId,
+                new AccountChargeRequest
                 {
                     OperationId = Guid.NewGuid().ToString(),
-                    AmountDelta = 122.9999M,
+                    AmountDelta = 123M,
                     Reason = "integration tests: withdraw",
-                    ReasonType = AccountBalanceChangeReasonTypeContract.Manual,
                 });
-            //if (account == null || account.Balance - realisedDailyPnl < command.Amount)
-            //TODO in AccMgmt maybe it's better to have <= here
-            //if (account.GetFreeMargin() >= command.Amount)
-            //TODO in MTCore need to check previously frozen margin 
-            
-            var messagesReceivedTask = Task.WhenAll(
+
+            await Task.WhenAll(
                 RabbitUtil.WaitForCqrsMessage<AccountChangedEvent>(m => m.BalanceChange.Id == operationId),
                 RabbitUtil.WaitForCqrsMessage<WithdrawalSucceededEvent>(m => m.OperationId == operationId));
-
-            await messagesReceivedTask;
 
             // assert
             (await TestsHelpers.GetAccount()).Balance.Should().Be(0);
@@ -48,12 +39,11 @@ namespace MarginTrading.IntegrationTests.WorkflowTests.AccountManagement
         public async Task IfNotEnoughBalance_ShouldFailWithdraw()
         {
             // arrange
-            await TestsHelpers.EnsureAccountState(needBalance: 123);
+            await TestsHelpers.EnsureAccountState(neededBalance: 123);
             (await TestsHelpers.GetAccount()).Balance.Should().Be(123);
 
             // act
-            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(TestsHelpers.ClientId,
-                TestsHelpers.AccountId,
+            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(TestsHelpers.AccountId,
                 new AccountChargeManuallyRequest
                 {
                     OperationId = Guid.NewGuid().ToString(),

@@ -28,11 +28,11 @@
       "dependencies": {
         "FluentAssertions": {
           "target": "Package",
-          "version": "[5.4.1, )"
+          "version": "[5.4.2, )"
         },
         "JetBrains.Annotations": {
           "target": "Package",
-          "version": "[11.1.0, )"
+          "version": "[2018.2.1, )"
         },
         "Lykke.Common": {
           "target": "Package",
@@ -48,11 +48,11 @@
         },
         "Lykke.MarginTrading.AccountsManagement.Contracts": {
           "target": "Package",
-          "version": "[1.4.0, )"
+          "version": "[1.6.0, )"
         },
         "Lykke.MarginTrading.BackendSnow.Contracts": {
           "target": "Package",
-          "version": "[1.3.1, )"
+          "version": "[1.5.0, )"
         },
         "Lykke.Messaging.RabbitMq": {
           "target": "Package",
@@ -98,7 +98,7 @@
         },
         "Moq": {
           "target": "Package",
-          "version": "[4.8.3, )"
+          "version": "[4.10.0, )"
         },
         "NUnit": {
           "target": "Package",

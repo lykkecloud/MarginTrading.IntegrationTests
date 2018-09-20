@@ -1,18 +1,20 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
+using MarginTrading.IntegrationTests.Infrastructure;
 using NUnit.Framework;
 
 namespace MarginTrading.IntegrationTests.WorkflowTests.AccountManagement
 {
     public class ChargeManuallyTests
     {
+        
         [Test]
         public async Task EnsureAccountState_Always_ShouldFixAccount()
         {
             // arrange
 
             // act
-            var result = await TestsHelpers.EnsureAccountState(needBalance: 13);
+            var result = await TestsHelpers.EnsureAccountState(neededBalance: 13);
 
             // assert
             var account = await TestsHelpers.GetAccount();
@@ -36,6 +38,8 @@ namespace MarginTrading.IntegrationTests.WorkflowTests.AccountManagement
 
             // act
             await TestsHelpers.ChargeManually(delta);
+
+            //await Task.Delay(SettingsUtil.Settings.MarginTradingAccountManagement.MessagingDelay);
 
             // assert
             (await TestsHelpers.GetAccount()).Balance.Should().Be(0 + delta);

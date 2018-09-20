@@ -26,5 +26,7 @@ namespace MarginTrading.IntegrationTests.Settings
         
         [Optional]
         public bool EnableOperationsLogs { get; set; }
+        
+        public int MessagingDelay { get; set; }
     }
 }

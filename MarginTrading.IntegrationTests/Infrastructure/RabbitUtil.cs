@@ -28,17 +28,17 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                 k => ImmutableList.Create<Listener>(listener),
                 (k, l) => l.Add(listener));
 
-            var sutableOldMessage = _messagesHistory.GetValueOrDefault(typeof(T))?.Cast<T>().FirstOrDefault(predicate);
-            if (sutableOldMessage != null)
+            var suitableOldMessage = _messagesHistory.GetValueOrDefault(typeof(T))?.Cast<T>().FirstOrDefault(predicate);
+            if (suitableOldMessage != null)
             {
-                CompleteListener(sutableOldMessage, listener);
+                CompleteListener(suitableOldMessage, listener);
 
                 _listeners.AddOrUpdate(typeof(T),
                     k => ImmutableList<Listener>.Empty,
                     (k, l) => l.Remove(listener));
             }
 
-            return listener.TaskCompletionSource.Task.WithTimeout(10000);
+            return listener.TaskCompletionSource.Task.WithTimeout(50000);//must be 5000 for kube, 50000 for local
         }
 
         public static void ListenCqrsMessages<T>(string connectionString, string exchange)
