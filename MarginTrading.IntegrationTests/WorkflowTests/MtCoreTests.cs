@@ -30,25 +30,26 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             Thread.Sleep(sett.MessagingDelay);
         }
 
-        public async Task MarketOrder_Executed_WithCommission()
-        {
-            var orderRequest = new OrderPlaceRequest
-            {
-                AccountId = AccountHelpers.AccountId,
-                InstrumentId = ,
-                Direction = OrderDirectionContract.Buy,
-                Type = OrderTypeContract.Market,
-                Originator = OriginatorTypeContract.Investor,
-                Volume = 42,
-                CorrelationId = Guid.NewGuid().ToString("N"),
-            };
-            await ClientUtil.OrdersApi.PlaceAsync(orderRequest);
-
-            RabbitUtil.WaitForMessage<OrderHistoryEvent>(m => m.OrderSnapshot.Id == orderId);
-            
-            //wait for commission to be calculated and charged
-            await Task.WhenAll(
-                RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange.Id == operationId));
-        }
+//        [Test]
+//        public async Task MarketOrder_Executed_WithCommission()
+//        {
+//            var orderRequest = new OrderPlaceRequest
+//            {
+//                AccountId = AccountHelpers.AccountId,
+//                InstrumentId = ,
+//                Direction = OrderDirectionContract.Buy,
+//                Type = OrderTypeContract.Market,
+//                Originator = OriginatorTypeContract.Investor,
+//                Volume = 42,
+//                CorrelationId = Guid.NewGuid().ToString("N"),
+//            };
+//            await ClientUtil.OrdersApi.PlaceAsync(orderRequest);
+//
+//            RabbitUtil.WaitForMessage<OrderHistoryEvent>(m => m.OrderSnapshot.Id == orderId);
+//            
+//            //wait for commission to be calculated and charged
+//            await Task.WhenAll(
+//                RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange.Id == operationId));
+//        }
     }
 }

@@ -12,6 +12,7 @@ using NUnit.Framework;
 namespace MarginTrading.IntegrationTests.WorkflowTests
 {
     [TestFixture]
+    [NonParallelizable]
     public class AccountManagementTests
     {
         [OneTimeSetUp]
