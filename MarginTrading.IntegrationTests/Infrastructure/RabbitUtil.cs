@@ -19,7 +19,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
         private static readonly ConcurrentDictionary<Type, ImmutableList<Listener>> _listeners =
             new ConcurrentDictionary<Type, ImmutableList<Listener>>();
 
-        public static Task<T> WaitForCqrsMessage<T>(Func<T, bool> predicate)
+        public static Task<T> WaitForMessage<T>(Func<T, bool> predicate)
             where T : class
         {
             var listener = new Listener<T>(predicate, new TaskCompletionSource<T>());
@@ -51,6 +51,18 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                 ExchangeName = exchange,
                 RoutingKey = routingKey,
             }, false, MessageHandler, _rabbitMqService.GetMsgPackDeserializer<T>());
+        }
+
+        public static void ListenJsonMessages<T>(string connectionString, string exchange)
+            where T : class
+        {
+            var routingKey = typeof(T).Name;
+            _rabbitMqService.Subscribe(new RabbitConnectionSettings
+            {
+                ConnectionString = connectionString,
+                ExchangeName = exchange,
+                RoutingKey = routingKey,
+            }, false, MessageHandler, _rabbitMqService.GetJsonDeserializer<T>());
         }
 
         private static Task MessageHandler<T>(T message)

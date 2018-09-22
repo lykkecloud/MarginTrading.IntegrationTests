@@ -260,6 +260,20 @@
           "lib/netstandard2.0/MarginTrading.Backend.Contracts.dll": {}
         }
       },
+      "Lykke.MarginTrading.SettingsService.Contracts/1.1.9": {
+        "type": "package",
+        "dependencies": {
+          "JetBrains.Annotations": "11.1.0",
+          "MessagePack": "1.7.2",
+          "Refit": "4.6.30"
+        },
+        "compile": {
+          "lib/netstandard2.0/MarginTrading.SettingsService.Contracts.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/MarginTrading.SettingsService.Contracts.dll": {}
+        }
+      },
       "Lykke.Messaging/5.1.0": {
         "type": "package",
         "dependencies": {
@@ -327,6 +341,20 @@
         },
         "runtime": {
           "lib/netstandard2.0/Lykke.SettingsReader.dll": {}
+        }
+      },
+      "MarginTrading.TradingHistory.Client/3.0.5": {
+        "type": "package",
+        "dependencies": {
+          "Lykke.Common": "6.8.4",
+          "Microsoft.Rest.ClientRuntime": "2.3.11",
+          "refit": "4.6.16"
+        },
+        "compile": {
+          "lib/netstandard2.0/MarginTrading.TradingHistory.Client.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/MarginTrading.TradingHistory.Client.dll": {}
         }
       },
       "MessagePack/1.7.3.4": {
@@ -1764,6 +1792,19 @@
         },
         "runtime": {
           "lib/netstandard1.0/_._": {}
+        }
+      },
+      "Microsoft.Rest.ClientRuntime/2.3.11": {
+        "type": "package",
+        "dependencies": {
+          "NETStandard.Library": "1.6.1",
+          "Newtonsoft.Json": "9.0.1"
+        },
+        "compile": {
+          "lib/netstandard1.4/Microsoft.Rest.ClientRuntime.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.4/Microsoft.Rest.ClientRuntime.dll": {}
         }
       },
       "Microsoft.TestPlatform.ObjectModel/15.7.2": {
@@ -4824,6 +4865,18 @@
         "lykke.margintrading.backendsnow.contracts.nuspec"
       ]
     },
+    "Lykke.MarginTrading.SettingsService.Contracts/1.1.9": {
+      "sha512": "aK5dUjPxNrZnyIpMxmoSdgvL4Y/Z9JcsRxaTwMuIjLnlTEyjWjm7Za//9JQo7AIrTYSP453Fh/td7HXI0hyOPA==",
+      "type": "package",
+      "path": "lykke.margintrading.settingsservice.contracts/1.1.9",
+      "files": [
+        ".signature.p7s",
+        "lib/netstandard2.0/MarginTrading.SettingsService.Contracts.dll",
+        "lib/netstandard2.0/MarginTrading.SettingsService.Contracts.xml",
+        "lykke.margintrading.settingsservice.contracts.1.1.9.nupkg.sha512",
+        "lykke.margintrading.settingsservice.contracts.nuspec"
+      ]
+    },
     "Lykke.Messaging/5.1.0": {
       "sha512": "cWlMadPIST/7czGFPRV4IiJ0zDY5z3sCBH6KD1sFCKCzEGupD7fy0YIC7+jRo7GT3vGGJNs8PQYn67qQemYexg==",
       "type": "package",
@@ -4868,6 +4921,17 @@
         "lib/netstandard2.0/Lykke.SettingsReader.xml",
         "lykke.settingsreader.2.4.1.nupkg.sha512",
         "lykke.settingsreader.nuspec"
+      ]
+    },
+    "MarginTrading.TradingHistory.Client/3.0.5": {
+      "sha512": "ORfHBZ2Sowou6QUFfFfFLR/ugYpePHJHbua4cJvhTew/E7UTgcQU5qLyOYpeUJdFtMOXsoXKq3MS6aA9mTfB/Q==",
+      "type": "package",
+      "path": "margintrading.tradinghistory.client/3.0.5",
+      "files": [
+        "lib/netstandard2.0/MarginTrading.TradingHistory.Client.dll",
+        "lib/netstandard2.0/MarginTrading.TradingHistory.Client.xml",
+        "margintrading.tradinghistory.client.3.0.5.nupkg.sha512",
+        "margintrading.tradinghistory.client.nuspec"
       ]
     },
     "MessagePack/1.7.3.4": {
@@ -6369,6 +6433,21 @@
         "runtime.json",
         "useSharedDesignerContext.txt",
         "version.txt"
+      ]
+    },
+    "Microsoft.Rest.ClientRuntime/2.3.11": {
+      "sha512": "0WOjf6O3H7XPrjBxK5H1kHqyO+PLvzwJ5Zc1pXkimQ1FrroLuhRYtG5XW70qbq0AFFoS/3vsua0h19GLLXomTg==",
+      "type": "package",
+      "path": "microsoft.rest.clientruntime/2.3.11",
+      "files": [
+        "lib/net452/Microsoft.Rest.ClientRuntime.dll",
+        "lib/net452/Microsoft.Rest.ClientRuntime.runtimeconfig.json",
+        "lib/net452/Microsoft.Rest.ClientRuntime.xml",
+        "lib/netstandard1.4/Microsoft.Rest.ClientRuntime.dll",
+        "lib/netstandard1.4/Microsoft.Rest.ClientRuntime.runtimeconfig.json",
+        "lib/netstandard1.4/Microsoft.Rest.ClientRuntime.xml",
+        "microsoft.rest.clientruntime.2.3.11.nupkg.sha512",
+        "microsoft.rest.clientruntime.nuspec"
       ]
     },
     "Microsoft.TestPlatform.ObjectModel/15.7.2": {
@@ -12809,9 +12888,11 @@
       "Lykke.HttpClientGenerator >= 2.1.0",
       "Lykke.MarginTrading.AccountsManagement.Contracts >= 1.6.0",
       "Lykke.MarginTrading.BackendSnow.Contracts >= 1.5.0",
+      "Lykke.MarginTrading.SettingsService.Contracts >= 1.1.9",
       "Lykke.Messaging.RabbitMq >= 2.1.0",
       "Lykke.RabbitMqBroker >= 7.1.0",
       "Lykke.SettingsReader >= 2.4.1",
+      "MarginTrading.TradingHistory.Client >= 3.0.5",
       "Microsoft.Extensions.Configuration >= 2.1.1",
       "Microsoft.Extensions.Configuration.Binder >= 2.1.1",
       "Microsoft.Extensions.Configuration.EnvironmentVariables >= 2.1.1",
@@ -12892,6 +12973,10 @@
             "target": "Package",
             "version": "[1.5.0, )"
           },
+          "Lykke.MarginTrading.SettingsService.Contracts": {
+            "target": "Package",
+            "version": "[1.1.9, )"
+          },
           "Lykke.Messaging.RabbitMq": {
             "target": "Package",
             "version": "[2.1.0, )"
@@ -12903,6 +12988,10 @@
           "Lykke.SettingsReader": {
             "target": "Package",
             "version": "[2.4.1, )"
+          },
+          "MarginTrading.TradingHistory.Client": {
+            "target": "Package",
+            "version": "[3.0.5, )"
           },
           "Microsoft.Extensions.Configuration": {
             "target": "Package",

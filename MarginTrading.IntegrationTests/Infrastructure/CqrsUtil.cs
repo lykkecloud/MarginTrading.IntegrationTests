@@ -18,7 +18,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
 
         private static CqrsEngine CreateEngine()
         {
-            var sett = SettingsUtil.Settings.MarginTradingAccountManagement.Cqrs;
+            var sett = SettingsUtil.Settings.IntegrationTestSettings.Cqrs;
             var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory
             {
                 Uri = sett.ConnectionString
@@ -41,27 +41,27 @@ namespace MarginTrading.IntegrationTests.Infrastructure
         }
 
         // todo: move to test-specific code
-        private static IRegistration RegisterBoundedContext(CqrsSettings sett)
+        private static IRegistration RegisterBoundedContext(CqrsSettings settings)
         {
-            return Register.BoundedContext(sett.ContextNames.TradingEngine)
+            return Register.BoundedContext(settings.ContextNames.TradingEngine)
                 .PublishingEvents(
                     typeof(Backend.Contracts.Events.PositionClosedEvent))
                 .With(EventsRoute)
                 .PublishingCommands(typeof(DepositCommand))
-                .To(sett.ContextNames.AccountsManagement)
+                .To(settings.ContextNames.AccountsManagement)
                 .With(DefaultRoute);
         }
 
         public static void SendCommandToAccountManagement<T>(T command)
         {
-            var sett = SettingsUtil.Settings.MarginTradingAccountManagement.Cqrs;
+            var sett = SettingsUtil.Settings.IntegrationTestSettings.Cqrs;
             _cqrsEngine.SendCommand(command, sett.ContextNames.TradingEngine,
                 sett.ContextNames.AccountsManagement);
         }
         
         public static void SendEventToAccountManagement<T>(T @event)
         {
-            var sett = SettingsUtil.Settings.MarginTradingAccountManagement.Cqrs;
+            var sett = SettingsUtil.Settings.IntegrationTestSettings.Cqrs;
             _cqrsEngine.PublishEvent(@event, sett.ContextNames.TradingEngine);
         }
 

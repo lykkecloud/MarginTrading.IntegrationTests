@@ -4,7 +4,7 @@ using Lykke.SettingsReader.Attributes;
 namespace MarginTrading.IntegrationTests.Settings
 {
     [UsedImplicitly]
-    public class AccountManagementSettings
+    public class IntegrationTestSettings
     {
         /// <summary>
         /// DB connection strings
@@ -14,7 +14,7 @@ namespace MarginTrading.IntegrationTests.Settings
         /// <summary>
         /// RabbitMq exchanges connections
         /// </summary>
-        public RabbitMqSettings RabbitMq { get; set; }
+        public RabbitMqSettings RabbitMqQueues { get; set; }
         
         /// <summary>
         /// Behavior settings for accounts

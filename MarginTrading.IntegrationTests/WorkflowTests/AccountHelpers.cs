@@ -5,9 +5,9 @@ using MarginTrading.AccountsManagement.Contracts.Events;
 using MarginTrading.AccountsManagement.Contracts.Models;
 using MarginTrading.IntegrationTests.Infrastructure;
 
-namespace MarginTrading.IntegrationTests.WorkflowTests.AccountManagement
+namespace MarginTrading.IntegrationTests.WorkflowTests
 {
-    public static class TestsHelpers
+    public static class AccountHelpers
     {
         public const string ClientId = "IntergationalTestsClient";
         public const string AccountId = "IntergationalTestsAccount-1";
@@ -55,7 +55,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests.AccountManagement
                     EventSourceId = Guid.NewGuid().ToString(),
                 });
 
-            await RabbitUtil.WaitForCqrsMessage<AccountChangedEvent>(m => m.BalanceChange.Id == operationId);
+            await RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange.Id == operationId);
         }
 
         public static Task<AccountContract> GetAccount()

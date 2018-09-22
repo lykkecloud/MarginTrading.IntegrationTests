@@ -26,26 +26,20 @@
           </e>
         </e>
         <e p="Settings" t="Include">
-          <e p="AccountManagementServiceClientSettings.cs" t="Include" />
-          <e p="AccountManagementSettings.cs" t="Include" />
           <e p="AppSettings.cs" t="Include" />
           <e p="BehaviorSettings.cs" t="Include" />
+          <e p="ClientSettings.cs" t="Include" />
           <e p="CqrsContextNamesSettings.cs" t="Include" />
           <e p="CqrsSettings.cs" t="Include" />
           <e p="DbSettings.cs" t="Include" />
+          <e p="IntegrationTestSettings.cs" t="Include" />
           <e p="RabbitConnectionSettings.cs" t="Include" />
           <e p="RabbitMqSettings.cs" t="Include" />
         </e>
         <e p="WorkflowTests" t="Include">
-          <e p="AccountManagement" t="Include">
-            <e p="ChargeManuallyTests.cs" t="Include" />
-            <e p="CloseOrderTests.cs" t="Include" />
-            <e p="DepositTests.cs" t="Include" />
-            <e p="InitNamespace.cs" t="Include" />
-            <e p="Setup.cs" t="Include" />
-            <e p="TestsHelpers.cs" t="Include" />
-            <e p="WithdrawTests.cs" t="Include" />
-          </e>
+          <e p="AccountHelpers.cs" t="Include" />
+          <e p="AccountManagementTests.cs" t="Include" />
+          <e p="MtCoreTests.cs" t="Include" />
         </e>
       </e>
       <e p="MarginTrading.IntegrationTests.sln" t="IncludeFlat" />
