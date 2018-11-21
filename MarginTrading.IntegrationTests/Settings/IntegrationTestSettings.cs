@@ -19,7 +19,6 @@ namespace MarginTrading.IntegrationTests.Settings
         /// <summary>
         /// Behavior settings for accounts
         /// </summary>
-        [Optional, CanBeNull]
         public BehaviorSettings Behavior { get; set; }
         
         public CqrsSettings Cqrs { get; set; }
@@ -27,6 +26,16 @@ namespace MarginTrading.IntegrationTests.Settings
         [Optional]
         public bool EnableOperationsLogs { get; set; }
         
+        /// <summary>
+        /// RabbitMqSubscriber does not wait for a reader thread to start before returning from the Start() method.
+        /// Must be 1000 for k8s, 10000 for local
+        /// </summary>
         public int MessagingDelay { get; set; }
+        
+        /// <summary>
+        /// Timeout for a RabbitMq message to come over.
+        /// Must be 6000 for k8s, 60000 for local
+        /// </summary>
+        public int RabbitListenerTimeout { get; set; }
     }
 }

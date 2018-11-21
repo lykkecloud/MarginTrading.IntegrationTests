@@ -6,7 +6,8 @@ namespace MarginTrading.IntegrationTests.Settings
     [UsedImplicitly]
     public class BehaviorSettings
     {
-        [Optional]
+        public string ClientId { get; set; }
+        
         public string AccountIdPrefix { get; set; }
         
         [Optional]

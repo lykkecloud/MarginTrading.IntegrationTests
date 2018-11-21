@@ -5,22 +5,25 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using MarginTrading.AccountsManagement.Contracts.Api;
 using MarginTrading.AccountsManagement.Contracts.Events;
+using MarginTrading.AccountsManagement.Contracts.Models;
 using MarginTrading.Backend.Contracts.Events;
 using MarginTrading.IntegrationTests.Infrastructure;
+using MarginTrading.IntegrationTests.Settings;
 using NUnit.Framework;
 
 namespace MarginTrading.IntegrationTests.WorkflowTests
 {
     [TestFixture]
-    [NonParallelizable]
+    //[NonParallelizable] //used assembly-wide non-parallelism
     public class AccountManagementTests
     {
+        private readonly IntegrationTestSettings _settings = SettingsUtil.Settings.IntegrationTestSettings;
+        
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            var sett = SettingsUtil.Settings.IntegrationTestSettings;
-            var connectionString = sett.Cqrs.ConnectionString;
-            var eventsExchange = $"{sett.Cqrs.EnvironmentName}.{sett.Cqrs.ContextNames.AccountsManagement}.events.exchange";
+            var connectionString = _settings.Cqrs.ConnectionString;
+            var eventsExchange = $"{_settings.Cqrs.EnvironmentName}.{_settings.Cqrs.ContextNames.AccountsManagement}.events.exchange";
             
             //cqrs messages subscription
             RabbitUtil.ListenCqrsMessages<AccountChangedEvent>(connectionString, eventsExchange);
@@ -31,7 +34,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             //other messages subscription
             
             // RabbitMqSubscriber does not wait for a reader thread to start before returning from the Start() method
-            Thread.Sleep(sett.MessagingDelay);
+            Thread.Sleep(_settings.MessagingDelay);
         }
 
         [OneTimeTearDown]
@@ -39,6 +42,36 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         {
             //todo dispose listeners
         }
+
+        #region Create account
+
+        [Test]
+        public async Task CreateAccount_Success()
+        {
+            // arrange
+            var accounts = await ClientUtil.AccountsApi.GetByClient(AccountHelpers.GetClientId);
+            var currentIndex = accounts.Where(x => x.Id.StartsWith(AccountHelpers.GetAccountIdPrefix))
+                .Select(x => (int.TryParse(x.Id.Replace(AccountHelpers.GetAccountIdPrefix, ""), out var value), value))
+                .Where(pair => pair.Item1)
+                .Select(pair => pair.value)
+                .Append(0)
+                .Max();
+            var newAccountId = $"{AccountHelpers.GetAccountIdPrefix}{++currentIndex}";
+
+            // act
+            await AccountHelpers.EnsureAccountState(0, newAccountId);
+
+            // assert
+            await RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.Account.Id == newAccountId
+                                                                      && m.EventType == AccountChangedEventTypeContract.Created);
+            var resultingAccount = await AccountHelpers.GetAccount(newAccountId);
+            resultingAccount.ClientId.Should().Be(AccountHelpers.GetClientId);
+            resultingAccount.Id.Should().Be(newAccountId);
+            resultingAccount.Balance.Should().Be(0); // may fail if Accounts -> Behaviour -> DefaultBalance != null
+            resultingAccount.IsDisabled.Should().Be(false);
+        }
+
+        #endregion Create account
         
         #region Charge manually
         
@@ -54,8 +87,8 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             var account = await AccountHelpers.GetAccount();
             account.Should().BeEquivalentTo(new
             {
-                ClientId = AccountHelpers.ClientId,
-                Id = AccountHelpers.AccountId,
+                ClientId = AccountHelpers.GetClientId,
+                Id = AccountHelpers.GetDefaultAccount,
                 Balance = 13,
                 IsDisabled = false,
             }, o => o.ExcludingMissingMembers());
@@ -92,8 +125,8 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             // act
             //todo use specific command
             CqrsUtil.SendEventToAccountManagement(new Backend.Contracts.Events.PositionClosedEvent(
-                accountId: AccountHelpers.AccountId, 
-                clientId: AccountHelpers.ClientId, 
+                accountId: AccountHelpers.GetDefaultAccount, 
+                clientId: AccountHelpers.GetClientId, 
                 positionId: operationId,
                 assetPairId: "testAssetPair",
                 balanceDelta: delta));
@@ -116,7 +149,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             await AccountHelpers.EnsureAccountState();
 
             // act
-            var operationId = await ClientUtil.AccountsApi.BeginDeposit(AccountHelpers.AccountId,
+            var operationId = await ClientUtil.AccountsApi.BeginDeposit(AccountHelpers.GetDefaultAccount,
                 new AccountChargeRequest
                 {
                     OperationId = Guid.NewGuid().ToString(),
@@ -145,7 +178,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             await AccountHelpers.EnsureAccountState(neededBalance: 123M);
 
             // act
-            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(AccountHelpers.AccountId,
+            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(AccountHelpers.GetDefaultAccount,
                 new AccountChargeRequest
                 {
                     OperationId = Guid.NewGuid().ToString(),
@@ -169,7 +202,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             (await AccountHelpers.GetAccount()).Balance.Should().Be(123);
 
             // act
-            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(AccountHelpers.AccountId,
+            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(AccountHelpers.GetDefaultAccount,
                 new AccountChargeRequest
                 {
                     OperationId = Guid.NewGuid().ToString(),
@@ -182,7 +215,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 RabbitUtil.WaitForMessage<WithdrawalFailedEvent>(m => m.OperationId == operationId));
 
             eventTask.GetType().GetGenericArguments().First().Should().Be<WithdrawalFailedEvent>();
-            //eventTask.Should().BeOfType<Task<WithdrawalFailedEvent>>();
+            eventTask.Should().BeOfType<Task<WithdrawalFailedEvent>>();
 
             // assert
             (await AccountHelpers.GetAccount()).Balance.Should().Be(123);
