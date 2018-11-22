@@ -40,7 +40,8 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            //todo dispose listeners
+            //dispose listeners
+            RabbitUtil.TearDown();
         }
 
         #region Create account
@@ -215,7 +216,6 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 RabbitUtil.WaitForMessage<WithdrawalFailedEvent>(m => m.OperationId == operationId));
 
             eventTask.GetType().GetGenericArguments().First().Should().Be<WithdrawalFailedEvent>();
-            eventTask.Should().BeOfType<Task<WithdrawalFailedEvent>>();
 
             // assert
             (await AccountHelpers.GetAccount()).Balance.Should().Be(123);

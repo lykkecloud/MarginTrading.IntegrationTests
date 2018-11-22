@@ -40,22 +40,22 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                 stoppable.Value.Stop();
         }
 
-        public IRabbitMqSerializer<TMessage> GetJsonSerializer<TMessage>()
+        public static IRabbitMqSerializer<TMessage> GetJsonSerializer<TMessage>()
         {
             return new JsonMessageSerializer<TMessage>(Encoding.UTF8, JsonSerializerSettings);
         }
 
-        public IRabbitMqSerializer<TMessage> GetMsgPackSerializer<TMessage>()
+        public static IRabbitMqSerializer<TMessage> GetMsgPackSerializer<TMessage>()
         {
             return new MessagePackMessageSerializer<TMessage>();
         }
 
-        public IMessageDeserializer<TMessage> GetJsonDeserializer<TMessage>()
+        public static IMessageDeserializer<TMessage> GetJsonDeserializer<TMessage>()
         {
             return new JsonMessageDeserializer<TMessage>(JsonSerializerSettings);
         }
 
-        public IMessageDeserializer<TMessage> GetMsgPackDeserializer<TMessage>()
+        public static IMessageDeserializer<TMessage> GetMsgPackDeserializer<TMessage>()
         {
             return new MessagePackMessageDeserializer<TMessage>();
         }

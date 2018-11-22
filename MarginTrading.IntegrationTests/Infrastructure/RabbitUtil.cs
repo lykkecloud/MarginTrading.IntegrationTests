@@ -11,7 +11,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
 {
     public static class RabbitUtil
     {
-        private static readonly RabbitMqService RabbitMqService = new RabbitMqService();
+        private static RabbitMqService _rabbitMqService = new RabbitMqService();
 
         private static readonly ConcurrentDictionary<Type, ConcurrentBag<object>> MessagesHistory =
             new ConcurrentDictionary<Type, ConcurrentBag<object>>();
@@ -47,7 +47,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
             where T : class
         {
             var routingKey = typeof(T).Name;
-            RabbitMqService.Subscribe(new RabbitConnectionSettings
+            _rabbitMqService.Subscribe(new RabbitConnectionSettings
             {
                 ConnectionString = connectionString,
                 ExchangeName = exchange,
@@ -59,7 +59,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
             where T : class
         {
             var routingKey = typeof(T).Name;
-            RabbitMqService.Subscribe(new RabbitConnectionSettings
+            _rabbitMqService.Subscribe(new RabbitConnectionSettings
             {
                 ConnectionString = connectionString,
                 ExchangeName = exchange,
@@ -110,6 +110,14 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                 Predicate = predicate;
                 TaskCompletionSource = taskCompletionSource;
             }
+        }
+
+        public static void TearDown()
+        {
+            //this unsubscribe from all the exchanges, it's ok only for globally non-parallel mode!
+            _rabbitMqService.Dispose();
+            
+            _rabbitMqService = new RabbitMqService();
         }
     }
 }
