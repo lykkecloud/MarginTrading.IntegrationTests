@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace MarginTrading.IntegrationTests.Infrastructure
 {
-    internal class SettingsUtil
+    internal static class SettingsUtil
     {
         public static AppSettings Settings { get; } = GetSettings();
 

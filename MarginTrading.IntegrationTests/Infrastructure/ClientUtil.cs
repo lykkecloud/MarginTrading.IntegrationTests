@@ -12,6 +12,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
         public static IAccountsApi AccountsApi { get; } =
             GetApi<IAccountsApi>(SettingsUtil.Settings.AccountManagementClient);
 
+        public static Backend.Contracts.IAccountsApi AccountsStatApi { get; } = GetApi<Backend.Contracts.IAccountsApi>(SettingsUtil.Settings.MtCoreClient);
         public static IOrdersApi OrdersApi { get; } = GetApi<IOrdersApi>(SettingsUtil.Settings.MtCoreClient);
         public static IPositionsApi PositionsApi { get; } = GetApi<IPositionsApi>(SettingsUtil.Settings.MtCoreClient);
         public static IPricesApi PricesApi { get; } = GetApi<IPricesApi>(SettingsUtil.Settings.MtCoreClient);
@@ -30,9 +31,15 @@ namespace MarginTrading.IntegrationTests.Infrastructure
 
         private static T GetApi<T>(ClientSettings apiSettings)
         {
-            var generator = HttpClientGenerator.BuildForUrl(apiSettings.ServiceUrl)
-                .WithoutCaching().WithoutRetries().Create();
-            return generator.Generate<T>();
+            var generatorBuilder = HttpClientGenerator.BuildForUrl(apiSettings.ServiceUrl)
+                .WithoutCaching().WithoutRetries();
+
+            if (!string.IsNullOrEmpty(apiSettings.ApiKey))
+            {
+                generatorBuilder.WithApiKey(apiSettings.ApiKey);
+            }
+            
+            return generatorBuilder.Create().Generate<T>();
         }
     }
 }

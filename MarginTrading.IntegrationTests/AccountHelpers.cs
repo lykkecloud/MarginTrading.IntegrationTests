@@ -4,29 +4,36 @@ using MarginTrading.AccountsManagement.Contracts.Api;
 using MarginTrading.AccountsManagement.Contracts.Events;
 using MarginTrading.AccountsManagement.Contracts.Models;
 using MarginTrading.IntegrationTests.Infrastructure;
+using MarginTrading.IntegrationTests.Settings;
 
-namespace MarginTrading.IntegrationTests.WorkflowTests
+namespace MarginTrading.IntegrationTests
 {
     public static class AccountHelpers
     {
-        public const string ClientId = "IntergationalTestsClient";
-        public const string AccountId = "IntergationalTestsAccount-1";
+        private static readonly BehaviorSettings BehaviorSettings = 
+            SettingsUtil.Settings.IntegrationTestSettings.Behavior;
+        
+        public static string GetClientId => BehaviorSettings.ClientId;
+        public static string GetDefaultAccount => $"{BehaviorSettings.AccountIdPrefix}1";
+        public static string GetAccountIdPrefix => BehaviorSettings.AccountIdPrefix;
 
-        public static async Task<AccountContract> EnsureAccountState(decimal neededBalance = 0)
+        public static async Task<AccountContract> EnsureAccountState(decimal neededBalance = 0, string accountId = null)
         {
-            var account = await ClientUtil.AccountsApi.GetById(AccountId);
+            var handlingAccountId = accountId ?? GetDefaultAccount;
+            var account = await ClientUtil.AccountsApi.GetById(handlingAccountId);
             if (account == null)
             {
                 account = await ClientUtil.AccountsApi.Create(new CreateAccountRequest
                 {
-                    AccountId = AccountId,
+                    ClientId = GetClientId,
+                    AccountId = handlingAccountId,
                     BaseAssetId = "EUR",
                 });
             }
 
             if (account.Balance != neededBalance)
             {
-                await ChargeManually(neededBalance - account.Balance);
+                await ChargeManually(neededBalance - account.Balance, accountId);
                 account = new AccountContract(account.Id, account.ClientId, account.TradingConditionId, 
                     account.BaseAssetId, neededBalance, account.WithdrawTransferLimit, account.LegalEntity,
                     account.IsDisabled, account.ModificationTimestamp, account.IsWithdrawalDisabled);
@@ -34,7 +41,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
 
             if (account.IsDisabled)
             {
-                account = await ClientUtil.AccountsApi.Change(AccountId, new ChangeAccountRequest
+                account = await ClientUtil.AccountsApi.Change(handlingAccountId, new ChangeAccountRequest
                 {
                     IsDisabled = false,
                 });
@@ -43,9 +50,11 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             return account;
         }
 
-        public static async Task ChargeManually(decimal delta)
+        public static async Task ChargeManually(decimal delta, string accountId = null)
         {
-            var operationId = await ClientUtil.AccountsApi.BeginChargeManually(AccountId,
+            var handlingAccountId = accountId ?? GetDefaultAccount;
+            
+            var operationId = await ClientUtil.AccountsApi.BeginChargeManually(handlingAccountId,
                 new AccountChargeManuallyRequest
                 {
                     OperationId = Guid.NewGuid().ToString(),
@@ -58,9 +67,9 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             await RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange.Id == operationId);
         }
 
-        public static Task<AccountContract> GetAccount()
+        public static Task<AccountContract> GetAccount(string accountId = null)
         {
-            return ClientUtil.AccountsApi.GetById(AccountId);
+            return ClientUtil.AccountsApi.GetById(accountId ?? GetDefaultAccount);
         }
     }
 }

@@ -11,34 +11,36 @@ namespace MarginTrading.IntegrationTests.Infrastructure
 {
     public static class RabbitUtil
     {
-        private static readonly RabbitMqService _rabbitMqService = new RabbitMqService();
+        private static RabbitMqService _rabbitMqService = new RabbitMqService();
 
-        private static readonly ConcurrentDictionary<Type, ConcurrentBag<object>> _messagesHistory =
+        private static readonly ConcurrentDictionary<Type, ConcurrentBag<object>> MessagesHistory =
             new ConcurrentDictionary<Type, ConcurrentBag<object>>();
 
-        private static readonly ConcurrentDictionary<Type, ImmutableList<Listener>> _listeners =
+        private static readonly ConcurrentDictionary<Type, ImmutableList<Listener>> Listeners =
             new ConcurrentDictionary<Type, ImmutableList<Listener>>();
+
+        private static readonly IntegrationTestSettings Settings = SettingsUtil.Settings.IntegrationTestSettings;
 
         public static Task<T> WaitForMessage<T>(Func<T, bool> predicate)
             where T : class
         {
             var listener = new Listener<T>(predicate, new TaskCompletionSource<T>());
 
-            _listeners.AddOrUpdate(typeof(T),
+            Listeners.AddOrUpdate(typeof(T),
                 k => ImmutableList.Create<Listener>(listener),
                 (k, l) => l.Add(listener));
 
-            var suitableOldMessage = _messagesHistory.GetValueOrDefault(typeof(T))?.Cast<T>().FirstOrDefault(predicate);
+            var suitableOldMessage = MessagesHistory.GetValueOrDefault(typeof(T))?.Cast<T>().FirstOrDefault(predicate);
             if (suitableOldMessage != null)
             {
                 CompleteListener(suitableOldMessage, listener);
 
-                _listeners.AddOrUpdate(typeof(T),
+                Listeners.AddOrUpdate(typeof(T),
                     k => ImmutableList<Listener>.Empty,
                     (k, l) => l.Remove(listener));
             }
-
-            return listener.TaskCompletionSource.Task.WithTimeout(50000);//must be 5000 for kube, 50000 for local
+            
+            return listener.TaskCompletionSource.Task.WithTimeout(Settings.RabbitListenerTimeout);
         }
 
         public static void ListenCqrsMessages<T>(string connectionString, string exchange)
@@ -50,7 +52,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                 ConnectionString = connectionString,
                 ExchangeName = exchange,
                 RoutingKey = routingKey,
-            }, false, MessageHandler, _rabbitMqService.GetMsgPackDeserializer<T>());
+            }, false, MessageHandler, RabbitMqService.GetMsgPackDeserializer<T>());
         }
 
         public static void ListenJsonMessages<T>(string connectionString, string exchange)
@@ -62,15 +64,15 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                 ConnectionString = connectionString,
                 ExchangeName = exchange,
                 RoutingKey = routingKey,
-            }, false, MessageHandler, _rabbitMqService.GetJsonDeserializer<T>());
+            }, false, MessageHandler, RabbitMqService.GetJsonDeserializer<T>());
         }
 
         private static Task MessageHandler<T>(T message)
         {
-            _messagesHistory.GetOrAdd(typeof(T), t => new ConcurrentBag<object>()).Add(message);
+            MessagesHistory.GetOrAdd(typeof(T), t => new ConcurrentBag<object>()).Add(message);
 
             var listeners = Array.Empty<Listener<T>>();
-            _listeners.AddOrUpdate(typeof(T), ImmutableList<Listener>.Empty, (key, old) =>
+            Listeners.AddOrUpdate(typeof(T), ImmutableList<Listener>.Empty, (key, old) =>
             {
                 listeners = old
                     .OfType<Listener<T>>()
@@ -88,10 +90,10 @@ namespace MarginTrading.IntegrationTests.Infrastructure
 
         private static Task<bool> CompleteListener<T>(T message, Listener<T> l)
         {
+            //integration tests are working in synchronous mode.
             l.TaskCompletionSource.SetResult(message);
             return Task.FromResult(true);
-            //TODO tests are now working in synchronous mode. Tests are timing out in async mode. Check it.
-            //return Task.Run(() => l.TaskCompletionSource.TrySetResult(message));
+//            return Task.Run(() => l.TaskCompletionSource.TrySetResult(message));
         }
 
         private class Listener
@@ -108,6 +110,14 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                 Predicate = predicate;
                 TaskCompletionSource = taskCompletionSource;
             }
+        }
+
+        public static void TearDown()
+        {
+            //this unsubscribe from all the exchanges, it's ok only for globally non-parallel mode!
+            _rabbitMqService.Dispose();
+            
+            _rabbitMqService = new RabbitMqService();
         }
     }
 }
