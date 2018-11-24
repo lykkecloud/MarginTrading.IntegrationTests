@@ -4,7 +4,7 @@ using MarginTrading.IntegrationTests.Infrastructure;
 using MarginTrading.IntegrationTests.Settings;
 using MarginTrading.SettingsService.Contracts.TradingConditions;
 
-namespace MarginTrading.IntegrationTests
+namespace MarginTrading.IntegrationTests.Helpers
 {
     public static class SettingHelpers
     {
