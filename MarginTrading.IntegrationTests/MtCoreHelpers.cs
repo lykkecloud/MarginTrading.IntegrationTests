@@ -1,14 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using MarginTrading.Backend.Contracts.Account;
+using MarginTrading.AccountsManagement.Contracts.Events;
+using MarginTrading.AccountsManagement.Contracts.Models;
 using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.IntegrationTests.Infrastructure;
 using MarginTrading.IntegrationTests.Settings;
 using Polly;
+using AccountStatContract = MarginTrading.Backend.Contracts.Account.AccountStatContract;
 
 namespace MarginTrading.IntegrationTests
 {
@@ -20,6 +23,7 @@ namespace MarginTrading.IntegrationTests
         public static async Task<AccountStatContract> EnsureAccountState(int neededBalance = 0)
         {
             var positions = await ClientUtil.PositionsApi.ListAsync(AccountHelpers.GetDefaultAccount);
+            var accountUpdatedTasks = new List<Task>();
             foreach (var openPositionContract in positions)
             {
                 await ClientUtil.PositionsApi.CloseAsync(openPositionContract.Id, new PositionCloseRequest
@@ -27,7 +31,12 @@ namespace MarginTrading.IntegrationTests
                     Originator = OriginatorTypeContract.System,
                     Comment = "Integration test cleanup",
                 });
+                accountUpdatedTasks.Add(
+                    RabbitUtil.WaitForMessage<AccountChangedEvent>(m =>
+                        m.BalanceChange?.EventSourceId == openPositionContract.Id
+                        && m.BalanceChange?.ReasonType == AccountBalanceChangeReasonTypeContract.RealizedPnL));
             }
+            await Task.WhenAll(accountUpdatedTasks);
 
             var account = await AccountHelpers.EnsureAccountState(neededBalance);
 
@@ -42,7 +51,7 @@ namespace MarginTrading.IntegrationTests
 
             if (accountStat == null || !Predicate(accountStat.AccountId, accountStat.Balance))
             {
-                throw new Exception($"Mt Core account [{account.Id}] balance state is not correct. Needed: [{neededBalance}], current: [{accountStat?.Balance}]");
+                throw new Exception($"Mt Core account [{account.Id}] balance is not correct. Needed: [{neededBalance}], current: [{accountStat?.Balance}]");
             }
 
             return accountStat;

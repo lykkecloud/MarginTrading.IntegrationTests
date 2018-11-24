@@ -12,5 +12,7 @@ namespace MarginTrading.IntegrationTests.Settings
         public ClientSettings MtCoreClient { get; set; }
         
         public ClientSettings SettingsServiceClient { get; set; }
+        
+        public ClientSettings TradingHistoryClient { get; set; }
     }
 }
