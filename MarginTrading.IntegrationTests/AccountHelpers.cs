@@ -53,7 +53,7 @@ namespace MarginTrading.IntegrationTests
         public static async Task ChargeManually(decimal delta, string accountId = null)
         {
             var handlingAccountId = accountId ?? GetDefaultAccount;
-            
+
             var operationId = await ClientUtil.AccountsApi.BeginChargeManually(handlingAccountId,
                 new AccountChargeManuallyRequest
                 {
@@ -64,7 +64,7 @@ namespace MarginTrading.IntegrationTests
                     EventSourceId = Guid.NewGuid().ToString(),
                 });
 
-            await RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange.Id == operationId);
+            await RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange?.Id == operationId);
         }
 
         public static Task<AccountContract> GetAccount(string accountId = null)

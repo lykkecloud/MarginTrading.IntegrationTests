@@ -1,4 +1,6 @@
-﻿using Lykke.HttpClientGenerator;
+﻿using System;
+using Lykke.HttpClientGenerator;
+using Lykke.HttpClientGenerator.Retries;
 using MarginTrading.Backend.Contracts;
 using MarginTrading.IntegrationTests.Settings;
 using MarginTrading.SettingsService.Contracts;
@@ -25,9 +27,9 @@ namespace MarginTrading.IntegrationTests.Infrastructure
         public static ITradingInstrumentsApi TradingInstrumentsApi { get; } = GetApi<ITradingInstrumentsApi>(SettingsUtil.Settings.SettingsServiceClient);
         public static ITradingRoutesApi TradingRoutesApi { get; } = GetApi<ITradingRoutesApi>(SettingsUtil.Settings.SettingsServiceClient);
         
-        public static IDealsApi DealsApi { get; } = GetApi<IDealsApi>(SettingsUtil.Settings.SettingsServiceClient);
-        public static IOrderEventsApi OrderEventsApi { get; } = GetApi<IOrderEventsApi>(SettingsUtil.Settings.SettingsServiceClient);
-        public static ITradesApi TradesApi { get; } = GetApi<ITradesApi>(SettingsUtil.Settings.SettingsServiceClient);
+        public static IDealsApi DealsApi { get; } = GetApi<IDealsApi>(SettingsUtil.Settings.TradingHistoryClient);
+        public static IOrderEventsApi OrderEventsApi { get; } = GetApi<IOrderEventsApi>(SettingsUtil.Settings.TradingHistoryClient);
+        public static ITradesApi TradesApi { get; } = GetApi<ITradesApi>(SettingsUtil.Settings.TradingHistoryClient);
 
         private static T GetApi<T>(ClientSettings apiSettings)
         {
@@ -36,7 +38,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
 
             if (!string.IsNullOrEmpty(apiSettings.ApiKey))
             {
-                generatorBuilder.WithApiKey(apiSettings.ApiKey);
+                generatorBuilder = generatorBuilder.WithApiKey(apiSettings.ApiKey);
             }
             
             return generatorBuilder.Create().Generate<T>();

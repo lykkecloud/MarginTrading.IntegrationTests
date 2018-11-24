@@ -51,7 +51,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         [OneTimeTearDown]
         public async Task OneTimeTearDown()
         {
-            await MtCoreHelpers.EnsureAccountState();
+            //await MtCoreHelpers.EnsureAccountState();
             
             //dispose listeners
             RabbitUtil.TearDown();
@@ -77,12 +77,12 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 Volume = volume,
                 CorrelationId = correlationId,
             };
-            var orderPlacementTask = ClientUtil.OrdersApi.PlaceAsync(orderRequest);
+            await ClientUtil.OrdersApi.PlaceAsync(orderRequest);
             
             //2. Order & position history events generated
-            var orderHistoryTask = RabbitUtil.WaitForMessage<OrderHistoryEvent>(m => 
+            var orderHistory = await RabbitUtil.WaitForMessage<OrderHistoryEvent>(m => 
                 m.OrderSnapshot.CorrelationId == correlationId);
-            var positionHistoryTask = RabbitUtil.WaitForMessage<PositionHistoryEvent>(m =>
+            await RabbitUtil.WaitForMessage<PositionHistoryEvent>(m =>
                 m.EventType == PositionHistoryTypeContract.Open
                 && m.PositionSnapshot.Volume == volume
                 && m.PositionSnapshot.Direction == PositionDirectionContract.Long
@@ -90,33 +90,21 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 && m.PositionSnapshot.AssetPairId == tradingInstrument.Instrument);
             
             //3. Commission is calculated and change balance command sent
-            var changeBalanceCommandTask = RabbitUtil.WaitForMessage<ChangeBalanceCommand>(m =>
+            await RabbitUtil.WaitForMessage<ChangeBalanceCommand>(m =>
                 m.AssetPairId == tradingInstrument.Instrument
                 && m.AccountId == AccountHelpers.GetDefaultAccount
                 && m.ReasonType == AccountBalanceChangeReasonTypeContract.Commission);
             
             //4. Commission charged on account
-            var accountBalanceChangeTask = RabbitUtil.WaitForMessage<AccountChangedEvent>(m => 
-                    m.Account.Id == AccountHelpers.GetDefaultAccount
-                    && m.EventType == AccountChangedEventTypeContract.BalanceUpdated
-                    && m.BalanceChange.Instrument == tradingInstrument.Instrument
-                    && m.BalanceChange.ReasonType == AccountBalanceChangeReasonTypeContract.Commission);
-
-//            await Task.WhenAll(
-//                orderPlacementTask, 
-//                orderHistoryTask, 
-//                positionHistoryTask, 
-//                changeBalanceCommandTask, 
-//                accountBalanceChangeTask);
-            await orderPlacementTask;
-            await orderHistoryTask;
-            await positionHistoryTask;
-            await changeBalanceCommandTask;
-            await accountBalanceChangeTask;
+            await RabbitUtil.WaitForMessage<AccountChangedEvent>(m =>
+                m.Account.Id == AccountHelpers.GetDefaultAccount
+                && m.EventType == AccountChangedEventTypeContract.BalanceUpdated
+                && m.BalanceChange.Instrument == tradingInstrument.Instrument
+                && m.BalanceChange.ReasonType == AccountBalanceChangeReasonTypeContract.Commission);
 
             //5. Position is on place
-            var accountPositions = await ClientUtil.PositionsApi.ListAsync();
-            accountPositions.Should().Match((List<OpenPositionContract> pl) => pl.Any(p => 
+            var accountPositions = await ClientUtil.PositionsApi.ListAsync(AccountHelpers.GetDefaultAccount);
+            accountPositions.Should().Match((List<OpenPositionContract> pl) => pl.Any(p =>
                 p != null
                 && p.CurrentVolume == volume
                 && p.Direction == PositionDirectionContract.Long
@@ -124,14 +112,15 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 && p.AssetPairId == tradingInstrument.Instrument));
             
             //6. Trading history was written
-            var orderId = orderHistoryTask.Result.OrderSnapshot.Id;
-            var orderEventsHistory = await ClientUtil.OrderEventsApi.OrderById(orderId);
-            orderEventsHistory.Should().Match((List<OrderEventContract> ol) => ol.Any(o =>
+            var orderId = orderHistory.OrderSnapshot.Id;
+            var orderExecHistory = (await ClientUtil.OrderEventsApi.OrderById(orderId, OrderStatusContract.Executed))
+                .FirstOrDefault();
+            orderExecHistory.Should().Match((OrderEventContract o) =>
                 o.Id == orderId
                 && o.Status == OrderStatusContract.Executed
                 && o.Volume == volume
                 && o.Type == TradingHistory.Client.Models.OrderTypeContract.Market
-                && o.Direction == TradingHistory.Client.Models.OrderDirectionContract.Buy));
+                && o.Direction == TradingHistory.Client.Models.OrderDirectionContract.Buy);
         }
     }
 }
