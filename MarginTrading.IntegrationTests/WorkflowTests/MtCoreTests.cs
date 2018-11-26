@@ -10,6 +10,7 @@ using MarginTrading.AccountsManagement.Contracts.Models;
 using MarginTrading.Backend.Contracts.Events;
 using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
+using MarginTrading.IntegrationTests.Helpers;
 using MarginTrading.IntegrationTests.Infrastructure;
 using MarginTrading.IntegrationTests.Settings;
 using MarginTrading.TradingHistory.Client.Models;
@@ -99,8 +100,8 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             await RabbitUtil.WaitForMessage<AccountChangedEvent>(m =>
                 m.Account.Id == AccountHelpers.GetDefaultAccount
                 && m.EventType == AccountChangedEventTypeContract.BalanceUpdated
-                && m.BalanceChange.Instrument == tradingInstrument.Instrument
-                && m.BalanceChange.ReasonType == AccountBalanceChangeReasonTypeContract.Commission);
+                && m.BalanceChange?.Instrument == tradingInstrument.Instrument
+                && m.BalanceChange?.ReasonType == AccountBalanceChangeReasonTypeContract.Commission);
 
             //5. Position is on place
             var accountPositions = await ClientUtil.PositionsApi.ListAsync(AccountHelpers.GetDefaultAccount);
@@ -114,13 +115,138 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             //6. Trading history was written
             var orderId = orderHistory.OrderSnapshot.Id;
             var orderExecHistory = (await ClientUtil.OrderEventsApi.OrderById(orderId, OrderStatusContract.Executed))
-                .FirstOrDefault();
+                .First();
             orderExecHistory.Should().Match((OrderEventContract o) =>
                 o.Id == orderId
                 && o.Status == OrderStatusContract.Executed
                 && o.Volume == volume
                 && o.Type == TradingHistory.Client.Models.OrderTypeContract.Market
                 && o.Direction == TradingHistory.Client.Models.OrderDirectionContract.Buy);
+            
+            //7. Clean up
+            //await MtCoreHelpers.EnsureAllPositionsClosed();
+        }
+
+        [Test]
+        public async Task LimitOrder_Match_Creates_Position()
+        {
+            //1. Set initial fake exchange connector rates
+            
+            //2. Create limit order
+            
+            //3. Change rates to match the order
+            
+            //4. Check limit order executed
+            
+            //5. Check position is created
+            
+            //6. Trading history was written
+            
+            //7. Clean up
+        }
+
+        [Test]
+        public async Task LimitOrder_SlTp_Executes()
+        {
+            //1. Set initial fake exchange connector rates
+            
+            //2. Create limit order with SL or TP
+            
+            //3. Change rates to match the order
+            
+            //4. Check limit order executed
+            
+            //5. Check position is created
+            
+            //6. Change rates that SL or TP is executed
+            
+            //7. Check position was closed
+            
+            //8. Trading history was written
+            
+            //9. Clean up
+        }
+
+        [Test]
+        public async Task LimitOrder_Ts_Moves_Sl_Price()
+        {
+            //1. Set initial fake exchange connector rates
+            
+            //2. Create limit order with SL or TP
+            
+            //3. Change rates to match the order
+            
+            //4. Check limit order executed
+            
+            //5. Check position is created
+            
+            //6. Change rates to move TS
+            
+            //7. Check SL price has changed
+            
+            //8. Trading history was written
+            
+            //9. Clean up
+        }
+
+        [Test]
+        public async Task PositionClose_Events_Commissions_AccountCharged()
+        {
+            //1. Place market order
+            
+            //2. Order & position history events generated
+            
+            //3. Commission is calculated and change balance command sent
+            
+            //4. Commission charged on account
+            
+            //5. Trading history was written
+            
+            //6. Clean up
+        }
+
+        [Test]
+        public async Task ClosePositionGroup_Liquidation_Succeeded()
+        {
+            //1. Place market orders
+            
+            //2. Order & position history events generated
+            
+            //3. Trading history was written
+            
+            //4. Call close position group
+            
+            //5. Await liquidation succeeds
+        }
+
+        [Test]
+        public async Task OnBehalf_OrderExecution_Commissions_AccountCharged()
+        {
+            //1. Place market order WithOnBehalfFees, close opened position
+            
+            //2. Order & position history events generated
+            
+            //3. Commission is calculated and change balance command sent
+            
+            //4. Commission charged on account
+            
+            //5. Trading history was written
+        }
+
+        [Test]
+        public async Task SpecialLiquidation_PositionsLiquidated_EventsGenerated()
+        {
+            //0. Check if fake Gavel is on, skip test if it's not
+            
+            //1. Place market orders, to make process go to Special Liquidation when ClosePositionGroup called
+            
+            //2. Order & position history events generated
+            
+            //3. Trading history was written
+            
+            //4. Call close position group -> Special Liquidation, verify process branch
+            
+            //5. Await liquidation succeeds
         }
     }
 }

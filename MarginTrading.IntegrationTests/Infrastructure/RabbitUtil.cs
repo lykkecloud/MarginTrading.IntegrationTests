@@ -78,7 +78,8 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                     .OfType<Listener<T>>()
                     .Where(l => l.Predicate(message))
                     .ToArray();
-                return old.RemoveAll(l => listeners.Contains(l));
+                //return old.RemoveAll(l => listeners.Contains(l));
+                return listeners.Any() ? old.Remove(listeners.First()) : old; // to keep track # of events
             });
 
             // Note that the async continuations, attached to the TaskCompletionSource.Task,

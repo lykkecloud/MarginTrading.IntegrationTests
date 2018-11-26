@@ -7,6 +7,7 @@ using MarginTrading.AccountsManagement.Contracts.Api;
 using MarginTrading.AccountsManagement.Contracts.Events;
 using MarginTrading.AccountsManagement.Contracts.Models;
 using MarginTrading.Backend.Contracts.Events;
+using MarginTrading.IntegrationTests.Helpers;
 using MarginTrading.IntegrationTests.Infrastructure;
 using MarginTrading.IntegrationTests.Settings;
 using NUnit.Framework;
@@ -37,6 +38,12 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             Thread.Sleep(_settings.MessagingDelay);
         }
 
+        [SetUp]
+        public void SetUp()
+        {
+            Thread.Sleep(2000); //try to wait all the messages to pass
+        }
+
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
@@ -60,7 +67,9 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             var newAccountId = $"{AccountHelpers.GetAccountIdPrefix}{++currentIndex}";
 
             // act
-            await AccountHelpers.EnsureAccountState(0, newAccountId);
+            //will fail if Accounts -> Behaviour -> DefaultBalance != null
+            //todo consider implementing handler for DefaultBalance
+            await MtCoreHelpers.EnsureAccountState(0, newAccountId, false);
 
             // assert
             await RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.Account.Id == newAccountId
@@ -68,7 +77,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             var resultingAccount = await AccountHelpers.GetAccount(newAccountId);
             resultingAccount.ClientId.Should().Be(AccountHelpers.GetClientId);
             resultingAccount.Id.Should().Be(newAccountId);
-            resultingAccount.Balance.Should().Be(0); // may fail if Accounts -> Behaviour -> DefaultBalance != null
+            resultingAccount.Balance.Should().Be(0);
             resultingAccount.IsDisabled.Should().Be(false);
         }
 
@@ -102,7 +111,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         public async Task ChargeManually_ShouldUpdateBalance(decimal delta)
         {
             // arrange
-            await AccountHelpers.EnsureAccountState();
+            await MtCoreHelpers.EnsureAccountState();
 
             // act
             await AccountHelpers.ChargeManually(delta);
@@ -120,12 +129,12 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         public async Task PositionClose_ShouldUpdateBalance(decimal delta)
         {
             // arrange
-            await AccountHelpers.EnsureAccountState();
+            await MtCoreHelpers.EnsureAccountState();
             var operationId = Guid.NewGuid().ToString();
             
             // act
             //todo use specific command
-            CqrsUtil.SendEventToAccountManagement(new Backend.Contracts.Events.PositionClosedEvent(
+            CqrsUtil.SendEventToAccountManagement(new PositionClosedEvent(
                 accountId: AccountHelpers.GetDefaultAccount, 
                 clientId: AccountHelpers.GetClientId, 
                 positionId: operationId,
@@ -133,7 +142,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 balanceDelta: delta));
 
             await RabbitUtil.WaitForMessage<AccountChangedEvent>(m =>
-                m.BalanceChange.Id == operationId + "-update-balance");
+                m.BalanceChange?.Id == operationId + "-update-balance");
 
             // assert
             (await AccountHelpers.GetAccount()).Balance.Should().Be(0 + delta);
@@ -147,7 +156,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         public async Task Deposit_Success()
         {
             // arrange
-            await AccountHelpers.EnsureAccountState();
+            await MtCoreHelpers.EnsureAccountState();
 
             // act
             var operationId = await ClientUtil.AccountsApi.BeginDeposit(AccountHelpers.GetDefaultAccount,
@@ -159,7 +168,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 });
             
             var messagesReceivedTask = Task.WhenAll(
-                RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange.Id == operationId),
+                RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange?.Id == operationId),
                 RabbitUtil.WaitForMessage<DepositSucceededEvent>(m => m.OperationId == operationId));
 
             await messagesReceivedTask;
@@ -176,39 +185,40 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         public async Task IfEnoughBalance_ShouldWithdraw()
         {
             // arrange
-            await AccountHelpers.EnsureAccountState(neededBalance: 123M);
+            var accountId = $"{AccountHelpers.GetAccountIdPrefix}2";
+            await MtCoreHelpers.EnsureAccountState(neededBalance: 123M, accountId: accountId);
 
             // act
-            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(AccountHelpers.GetDefaultAccount,
+            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(accountId,
                 new AccountChargeRequest
                 {
                     OperationId = Guid.NewGuid().ToString(),
                     AmountDelta = 123M,
-                    Reason = "integration tests: withdraw",
+                    Reason = $"integration tests: {nameof(IfEnoughBalance_ShouldWithdraw)}",
                 });
 
             await Task.WhenAll(
-                RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange.Id == operationId),
+                RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange?.Id == operationId),
                 RabbitUtil.WaitForMessage<WithdrawalSucceededEvent>(m => m.OperationId == operationId));
 
             // assert
-            (await AccountHelpers.GetAccount()).Balance.Should().Be(0);
+            (await AccountHelpers.GetAccount(accountId)).Balance.Should().Be(0);
         }
         
         [Test]
         public async Task IfNotEnoughBalance_ShouldFailWithdraw()
         {
             // arrange
-            await AccountHelpers.EnsureAccountState(neededBalance: 123);
-            (await AccountHelpers.GetAccount()).Balance.Should().Be(123);
+            var accountId = $"{AccountHelpers.GetAccountIdPrefix}2";
+            await MtCoreHelpers.EnsureAccountState(neededBalance: 123, accountId: accountId);
 
             // act
-            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(AccountHelpers.GetDefaultAccount,
+            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(accountId,
                 new AccountChargeRequest
                 {
                     OperationId = Guid.NewGuid().ToString(),
                     AmountDelta = 124,
-                    Reason = "integration tests: withdraw",
+                    Reason = $"integration tests: {nameof(IfNotEnoughBalance_ShouldFailWithdraw)}",
                 });
             
             var eventTask = await Task.WhenAny(
@@ -218,7 +228,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             eventTask.GetType().GetGenericArguments().First().Should().Be<WithdrawalFailedEvent>();
 
             // assert
-            (await AccountHelpers.GetAccount()).Balance.Should().Be(123);
+            (await AccountHelpers.GetAccount(accountId)).Balance.Should().Be(123);
         }
         
         #endregion Withdrawal

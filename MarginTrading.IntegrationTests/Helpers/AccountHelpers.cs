@@ -6,7 +6,7 @@ using MarginTrading.AccountsManagement.Contracts.Models;
 using MarginTrading.IntegrationTests.Infrastructure;
 using MarginTrading.IntegrationTests.Settings;
 
-namespace MarginTrading.IntegrationTests
+namespace MarginTrading.IntegrationTests.Helpers
 {
     public static class AccountHelpers
     {

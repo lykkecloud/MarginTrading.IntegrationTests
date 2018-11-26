@@ -1,6 +1,5 @@
 ﻿using System;
 using Lykke.HttpClientGenerator;
-using Lykke.HttpClientGenerator.Retries;
 using MarginTrading.Backend.Contracts;
 using MarginTrading.IntegrationTests.Settings;
 using MarginTrading.SettingsService.Contracts;
@@ -11,8 +10,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
 {
     public static class ClientUtil
     {
-        public static IAccountsApi AccountsApi { get; } =
-            GetApi<IAccountsApi>(SettingsUtil.Settings.AccountManagementClient);
+        public static IAccountsApi AccountsApi { get; } = GetApi<IAccountsApi>(SettingsUtil.Settings.AccountManagementClient);
 
         public static Backend.Contracts.IAccountsApi AccountsStatApi { get; } = GetApi<Backend.Contracts.IAccountsApi>(SettingsUtil.Settings.MtCoreClient);
         public static IOrdersApi OrdersApi { get; } = GetApi<IOrdersApi>(SettingsUtil.Settings.MtCoreClient);
@@ -35,7 +33,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
         {
             var generatorBuilder = HttpClientGenerator.BuildForUrl(apiSettings.ServiceUrl)
                 .WithoutCaching().WithoutRetries();
-
+            
             if (!string.IsNullOrEmpty(apiSettings.ApiKey))
             {
                 generatorBuilder = generatorBuilder.WithApiKey(apiSettings.ApiKey);
