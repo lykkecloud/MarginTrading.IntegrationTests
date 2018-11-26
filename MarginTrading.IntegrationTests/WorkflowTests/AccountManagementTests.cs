@@ -67,6 +67,8 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             var newAccountId = $"{AccountHelpers.GetAccountIdPrefix}{++currentIndex}";
 
             // act
+            //will fail if Accounts -> Behaviour -> DefaultBalance != null
+            //todo consider implementing handler for DefaultBalance
             await MtCoreHelpers.EnsureAccountState(0, newAccountId, false);
 
             // assert
@@ -75,7 +77,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             var resultingAccount = await AccountHelpers.GetAccount(newAccountId);
             resultingAccount.ClientId.Should().Be(AccountHelpers.GetClientId);
             resultingAccount.Id.Should().Be(newAccountId);
-            resultingAccount.Balance.Should().Be(0); // may fail if Accounts -> Behaviour -> DefaultBalance != null
+            resultingAccount.Balance.Should().Be(0);
             resultingAccount.IsDisabled.Should().Be(false);
         }
 
@@ -109,7 +111,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         public async Task ChargeManually_ShouldUpdateBalance(decimal delta)
         {
             // arrange
-            await MtCoreHelpers.EnsureAccountState(closeAllPositions: false);
+            await MtCoreHelpers.EnsureAccountState();
 
             // act
             await AccountHelpers.ChargeManually(delta);
@@ -127,7 +129,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         public async Task PositionClose_ShouldUpdateBalance(decimal delta)
         {
             // arrange
-            await MtCoreHelpers.EnsureAccountState(closeAllPositions: false);
+            await MtCoreHelpers.EnsureAccountState();
             var operationId = Guid.NewGuid().ToString();
             
             // act
@@ -154,7 +156,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         public async Task Deposit_Success()
         {
             // arrange
-            await MtCoreHelpers.EnsureAccountState(closeAllPositions: false);
+            await MtCoreHelpers.EnsureAccountState();
 
             // act
             var operationId = await ClientUtil.AccountsApi.BeginDeposit(AccountHelpers.GetDefaultAccount,
@@ -183,10 +185,11 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         public async Task IfEnoughBalance_ShouldWithdraw()
         {
             // arrange
-            await MtCoreHelpers.EnsureAccountState(neededBalance: 123M, closeAllPositions: false);
+            var accountId = $"{AccountHelpers.GetAccountIdPrefix}2";
+            await MtCoreHelpers.EnsureAccountState(neededBalance: 123M, accountId: accountId);
 
             // act
-            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(AccountHelpers.GetDefaultAccount,
+            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(accountId,
                 new AccountChargeRequest
                 {
                     OperationId = Guid.NewGuid().ToString(),
@@ -199,18 +202,18 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 RabbitUtil.WaitForMessage<WithdrawalSucceededEvent>(m => m.OperationId == operationId));
 
             // assert
-            (await AccountHelpers.GetAccount()).Balance.Should().Be(0);
+            (await AccountHelpers.GetAccount(accountId)).Balance.Should().Be(0);
         }
         
         [Test]
         public async Task IfNotEnoughBalance_ShouldFailWithdraw()
         {
             // arrange
-            await MtCoreHelpers.EnsureAccountState(neededBalance: 123, closeAllPositions: false);
-            (await AccountHelpers.GetAccount()).Balance.Should().Be(123);
+            var accountId = $"{AccountHelpers.GetAccountIdPrefix}2";
+            await MtCoreHelpers.EnsureAccountState(neededBalance: 123, accountId: accountId);
 
             // act
-            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(AccountHelpers.GetDefaultAccount,
+            var operationId = await ClientUtil.AccountsApi.BeginWithdraw(accountId,
                 new AccountChargeRequest
                 {
                     OperationId = Guid.NewGuid().ToString(),
@@ -225,7 +228,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             eventTask.GetType().GetGenericArguments().First().Should().Be<WithdrawalFailedEvent>();
 
             // assert
-            (await AccountHelpers.GetAccount()).Balance.Should().Be(123);
+            (await AccountHelpers.GetAccount(accountId)).Balance.Should().Be(123);
         }
         
         #endregion Withdrawal

@@ -124,7 +124,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 && o.Direction == TradingHistory.Client.Models.OrderDirectionContract.Buy);
             
             //7. Clean up
-            await MtCoreHelpers.EnsureAllPositionsClosed();
+            //await MtCoreHelpers.EnsureAllPositionsClosed();
         }
 
         [Test]

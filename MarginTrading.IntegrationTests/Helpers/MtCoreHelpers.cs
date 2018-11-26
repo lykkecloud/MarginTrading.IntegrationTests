@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MarginTrading.AccountsManagement.Contracts.Events;
 using MarginTrading.AccountsManagement.Contracts.Models;
+using MarginTrading.Backend.Contracts.Events;
 using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.IntegrationTests.Infrastructure;
@@ -31,13 +32,11 @@ namespace MarginTrading.IntegrationTests.Helpers
             var account = await AccountHelpers.EnsureAccountState(neededBalance, accountId);
 
             bool Predicate(string accId, decimal balance) => accId == account.Id && balance == neededBalance;
-            
-            var accountStat = await Policy.HandleResult<AccountStatContract>(r => Predicate(r.AccountId, r.Balance))
-                .WaitAndRetryAsync(BehaviorSettings.ApiCallRetries,
-                    x => TimeSpan.FromMilliseconds(BehaviorSettings.ApiCallRetryPeriodMs))
-                .ExecuteAsync(
-                    async ct => await ClientUtil.AccountsStatApi.GetAccountStats(accountId),
-                    CancellationToken.None);
+
+            var accountStat = await ApiHelpers
+                .GetRefitRetryPolicy<AccountStatContract>(r => !Predicate(r.AccountId, r.Balance))
+                .ExecuteAsync(async ct =>
+                    await ClientUtil.AccountsStatApi.GetAccountStats(accountId), CancellationToken.None);
 
             if (accountStat == null || !Predicate(accountStat.AccountId, accountStat.Balance))
             {
@@ -53,17 +52,33 @@ namespace MarginTrading.IntegrationTests.Helpers
             var accountUpdatedTasks = new List<Task>();
             foreach (var openPositionContract in positions)
             {
+//                await ApiHelpers.GetRefitRetryPolicy().ExecuteAsync(async ct =>
+//                    await ClientUtil.PositionsApi.CloseAsync(openPositionContract.Id, new PositionCloseRequest
+//                    {
+//                        Originator = OriginatorTypeContract.System,
+//                        Comment = $"Integration test {nameof(EnsureAllPositionsClosed)}",
+//                    }), CancellationToken.None);//this retries just to check.. seems it didn't helped
                 await ClientUtil.PositionsApi.CloseAsync(openPositionContract.Id, new PositionCloseRequest
                 {
                     Originator = OriginatorTypeContract.System,
-                    Comment = "Integration test cleanup",
+                    Comment = $"Integration test {nameof(EnsureAllPositionsClosed)}",
                 });
+                
                 accountUpdatedTasks.Add(
-                    RabbitUtil.WaitForMessage<AccountChangedEvent>(m =>
-                        m.BalanceChange?.EventSourceId == openPositionContract.Id
-                        && m.BalanceChange?.ReasonType == AccountBalanceChangeReasonTypeContract.RealizedPnL));
+                    new Task(async () =>
+                    {
+                        var positionHistoryEvent = await RabbitUtil.WaitForMessage<PositionHistoryEvent>(m =>
+                            m.Deal?.PositionId == openPositionContract.Id);
+                        
+                        await RabbitUtil.WaitForMessage<AccountChangedEvent>(m =>
+                            m.BalanceChange?.EventSourceId == positionHistoryEvent.Deal.DealId
+                            && m.BalanceChange?.ReasonType == AccountBalanceChangeReasonTypeContract.RealizedPnL);
+                        
+                        //todo await commissions charged + check onBehalf from AdditionalInfo
+                        
+                    }));
             }
-            await Task.WhenAll(accountUpdatedTasks); 
+            await Task.WhenAll(accountUpdatedTasks);
         }
     }
 }

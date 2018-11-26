@@ -15,7 +15,7 @@
     <PackageReference Include="Lykke.Common" Version="7.0.1" />
     <PackageReference Include="Lykke.Cqrs" Version="4.8.0" />
     <PackageReference Include="Lykke.HttpClientGenerator" Version="2.1.0" />
-    <PackageReference Include="Lykke.MarginTrading.AccountsManagement.Contracts" Version="1.6.2" />
+    <PackageReference Include="Lykke.MarginTrading.AccountsManagement.Contracts" Version="1.7.0" />
     <PackageReference Include="Lykke.MarginTrading.BackendSnow.Contracts" Version="1.7.2" />
     <PackageReference Include="Lykke.MarginTrading.SettingsService.Contracts" Version="1.1.10" />
     <PackageReference Include="MarginTrading.TradingHistory.Client" Version="3.0.7" />
