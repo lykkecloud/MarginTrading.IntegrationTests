@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using MarginTrading.IntegrationTests.Infrastructure;
+using MarginTrading.IntegrationTests.Models;
 using MarginTrading.SettingsService.Contracts.Asset;
 using MarginTrading.SettingsService.Contracts.AssetPair;
 using MarginTrading.SettingsService.Contracts.Enums;

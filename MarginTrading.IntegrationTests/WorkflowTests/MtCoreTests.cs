@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Lykke.RabbitMqBroker.Publisher;
 using MarginTrading.AccountsManagement.Contracts.Commands;
 using MarginTrading.AccountsManagement.Contracts.Events;
 using MarginTrading.AccountsManagement.Contracts.Models;
@@ -12,6 +13,7 @@ using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.IntegrationTests.Helpers;
 using MarginTrading.IntegrationTests.Infrastructure;
+using MarginTrading.IntegrationTests.Models;
 using MarginTrading.IntegrationTests.Settings;
 using MarginTrading.TradingHistory.Client.Models;
 using NUnit.Framework;
@@ -27,6 +29,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
     public class MtCoreTests
     {
         private readonly IntegrationTestSettings _settings = SettingsUtil.Settings.IntegrationTestSettings;
+        private RabbitMqPublisher<OrderBook> _quotePublisher;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -36,6 +39,12 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 $"{_settings.Cqrs.EnvironmentName}.{_settings.Cqrs.ContextNames.AccountsManagement}.events.exchange";
             var accountCommandsExchange = 
                 $"{_settings.Cqrs.EnvironmentName}.{_settings.Cqrs.ContextNames.AccountsManagement}.commands.exchange";
+
+            _quotePublisher = RabbitUtil.GetProducer<OrderBook>(new RabbitConnectionSettings
+            {
+                ExchangeName = SettingsUtil.Settings.IntegrationTestSettings.RabbitMqQueues.FakeOrderBook.ExchangeName,
+                ConnectionString = connectionString,
+            }, false);
             
             //cqrs messages subscription
             RabbitUtil.ListenCqrsMessages<AccountChangedEvent>(connectionString, accountEventsExchange);
@@ -130,18 +139,37 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         [Test]
         public async Task LimitOrder_Match_Creates_Position()
         {
+            //0. Make preparations
+            var accountStat = await MtCoreHelpers.EnsureAccountState(neededBalance: 100);
+            var tradingInstrument = await SettingHelpers.EnsureInstrumentState();
+            
             //1. Set initial fake exchange connector rates
-            
+            await _quotePublisher.ProduceAsync(QuotesData.GetNormalOrderBook());
+
             //2. Create limit order
-            
+            var correlationId = Guid.NewGuid().ToString("N");
+            var volume = 30;
+            var orderRequest = new OrderPlaceRequest
+            {
+                AccountId = accountStat.AccountId,
+                InstrumentId = tradingInstrument.Instrument,
+                Direction = OrderDirectionContract.Buy,
+                Type = OrderTypeContract.Market,
+                Originator = OriginatorTypeContract.Investor,
+                Volume = volume,
+                CorrelationId = correlationId,
+            };
+            await ClientUtil.OrdersApi.PlaceAsync(orderRequest);
+
             //3. Change rates to match the order
-            
+            await _quotePublisher.ProduceAsync(QuotesData.GetLowerOrderBook());
+
             //4. Check limit order executed
-            
+
             //5. Check position is created
-            
+
             //6. Trading history was written
-            
+
             //7. Clean up
         }
 
