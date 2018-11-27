@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MarginTrading.IntegrationTests.Helpers;
@@ -9,8 +10,9 @@ using NUnit.Framework;
 
 namespace MarginTrading.IntegrationTests.WorkflowTests
 {
-    [TestFixture]
-    public class SettingsServiceTests
+    [SetUpFixture]
+    //[TestFixture]
+    public class SettingsServiceSetUp
     {
         private readonly IntegrationTestSettings _settings = SettingsUtil.Settings.IntegrationTestSettings;
 
@@ -29,7 +31,26 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             
             // RabbitMqSubscriber does not wait for a reader thread to start before returning from the Start() method
             Thread.Sleep(_settings.MessagingDelay);
-            
+
+            try
+            {
+                await CreateAll();
+            }
+            catch (Exception) // for the case of dirty state
+            {
+                await RemoveAll();
+                await CreateAll();
+            }
+        }
+
+        [OneTimeTearDown]
+        public async Task OneTimeTearDown()
+        {
+            await RemoveAll();
+        }
+
+        private static async Task CreateAll()
+        {
             //Create Assets
             await MtSettingsHelper.CreateAssets();
             //Create Markets
@@ -45,8 +66,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             await MtSettingsHelper.CreateTradingRoutes();
         }
 
-        [OneTimeTearDown]
-        public async Task OneTimeTearDown()
+        private static async Task RemoveAll()
         {
             //Remove TradingInstruments
             await MtSettingsHelper.RemoveTradingInstruments();
@@ -62,11 +82,11 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             await MtSettingsHelper.RemoveTradingRoutes();
         }
 
-        [Test]
-        public async Task All_Settings_Created_And_Events_Consumed()
-        {
-            //testing is done via OneTime handlers
-        }
+//        [Test]
+//        public async Task All_Settings_Created_And_Events_Consumed()
+//        {
+//            //testing is done via OneTime handlers
+//        }
         
         //todo add test ScheduleSettings compiled list
         //todo add test ScheduleSettings -> backend compiled correctly

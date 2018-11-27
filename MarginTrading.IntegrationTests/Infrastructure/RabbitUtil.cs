@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Extensions;
+using Lykke.RabbitMqBroker.Publisher;
 using MarginTrading.IntegrationTests.Settings;
 
 namespace MarginTrading.IntegrationTests.Infrastructure
@@ -67,6 +68,21 @@ namespace MarginTrading.IntegrationTests.Infrastructure
             }, false, MessageHandler, RabbitMqService.GetJsonDeserializer<T>());
         }
 
+        public static RabbitMqPublisher<TMessage> GetProducer<TMessage>(RabbitConnectionSettings settings, bool isJson = true)
+        {
+            return _rabbitMqService.GetProducer(settings, false, isJson
+                ? RabbitMqService.GetJsonSerializer<TMessage>()
+                : RabbitMqService.GetMsgPackSerializer<TMessage>());
+        }
+
+        public static void TearDown()
+        {
+            //this unsubscribe from all the exchanges, it's ok only for globally non-parallel mode!
+            _rabbitMqService.Dispose();
+            
+            _rabbitMqService = new RabbitMqService();
+        }
+
         private static Task MessageHandler<T>(T message)
         {
             MessagesHistory.GetOrAdd(typeof(T), t => new ConcurrentBag<object>()).Add(message);
@@ -111,14 +127,6 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                 Predicate = predicate;
                 TaskCompletionSource = taskCompletionSource;
             }
-        }
-
-        public static void TearDown()
-        {
-            //this unsubscribe from all the exchanges, it's ok only for globally non-parallel mode!
-            _rabbitMqService.Dispose();
-            
-            _rabbitMqService = new RabbitMqService();
         }
     }
 }

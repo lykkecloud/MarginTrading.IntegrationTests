@@ -10,5 +10,7 @@ namespace MarginTrading.IntegrationTests.Settings
         public RabbitConnectionSettings PositionHistory { get; set; }
         
         public RabbitConnectionSettings SettingsChanged { get; set; }
+        
+        public RabbitConnectionSettings FakeOrderBook { get; set; }
     }
 }

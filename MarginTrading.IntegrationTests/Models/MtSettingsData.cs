@@ -9,7 +9,7 @@ using MarginTrading.SettingsService.Contracts.Routes;
 using MarginTrading.SettingsService.Contracts.Scheduling;
 using MarginTrading.SettingsService.Contracts.TradingConditions;
 
-namespace MarginTrading.IntegrationTests
+namespace MarginTrading.IntegrationTests.Models
 {
     public static class MtSettingsData
     {
