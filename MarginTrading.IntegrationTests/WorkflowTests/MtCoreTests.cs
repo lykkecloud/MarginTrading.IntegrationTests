@@ -13,6 +13,7 @@ using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.Backend.Contracts.Workflow.Liquidation;
 using MarginTrading.Backend.Contracts.Workflow.Liquidation.Events;
+using MarginTrading.Backend.Contracts.Workflow.SpecialLiquidation.Events;
 using MarginTrading.IntegrationTests.Helpers;
 using MarginTrading.IntegrationTests.Infrastructure;
 using MarginTrading.IntegrationTests.Models;
@@ -57,6 +58,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             RabbitUtil.ListenCqrsMessages<AccountChangedEvent>(connectionString, accountEventsExchange);
             RabbitUtil.ListenCqrsMessages<ChangeBalanceCommand>(connectionString, accountCommandsExchange);
             RabbitUtil.ListenCqrsMessages<LiquidationFinishedEvent>(connectionString, mtCoreEventsExchange);
+            RabbitUtil.ListenCqrsMessages<SpecialLiquidationFinishedEvent>(connectionString, mtCoreEventsExchange);
 
             //other messages subscription
             RabbitUtil.ListenJsonMessages<OrderHistoryEvent>(connectionString, _settings.RabbitMqQueues.OrderHistory.ExchangeName);
@@ -380,16 +382,72 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         public async Task SpecialLiquidation_PositionsLiquidated_EventsGenerated()
         {
             //0. Check if fake Gavel is on, skip test if it's not
+            if (!SettingsUtil.Settings.MtBackend.IsFakeGavel)
+            {
+                Assert.Inconclusive("Fake Gavel is off, skipping Special Liquidation test");
+            }
             
-            //1. Place market orders, to make process go to Special Liquidation when ClosePositionGroup called
+            //1. Make preparations
+            var accountStat = await MtCoreHelpers.EnsureAccountState(neededBalance: 100);
+            var tradingInstrument = await SettingHelpers.EnsureInstrumentState();
+            await _quotePublisher.ProduceAsync(QuotesData.GetNormalOrderBook());
             
-            //2. Order & position history events generated
+            //2. Place market orders
+            var orderRequest1 = await MtCoreHelpers.PlaceOrder(accountStat.AccountId, tradingInstrument.Instrument,
+                OrderTypeContract.Market, 42);
+            var orderRequest2 = await MtCoreHelpers.PlaceOrder(accountStat.AccountId, tradingInstrument.Instrument,
+                OrderTypeContract.Market, 12M);
             
-            //3. Trading history was written
+            //3. Order & position history events generated
+            var historyEvents1 = await TradingHistoryHelpers.WaitForHistoryEvents(orderRequest1.CorrelationId);
+            var historyEvents2 = await TradingHistoryHelpers.WaitForHistoryEvents(orderRequest2.CorrelationId);
             
-            //4. Call close position group -> Special Liquidation, verify process branch
+            //4. Open trading history was written
+            var openTrade1 = await TradingHistoryHelpers.EnsureTrade(historyEvents1.order.OrderSnapshot.Id, 
+                orderRequest1.Volume, orderRequest1.InstrumentId);
+            var openTrade2 = await TradingHistoryHelpers.EnsureTrade(historyEvents2.order.OrderSnapshot.Id, 
+                orderRequest2.Volume, orderRequest2.InstrumentId);
             
-            //5. Await liquidation succeeds
+            //5. Emulate low liquidity
+            await _quotePublisher.ProduceAsync(QuotesData.GetLowLiquidityOrderBook());
+            
+            //6. Call close position group -> Special Liquidation
+            var correlationId = Guid.NewGuid().ToString();
+            await ClientUtil.PositionsApi.CloseGroupAsync(tradingInstrument.Instrument, accountStat.AccountId,
+                request: new PositionCloseRequest
+                {
+                    Comment = $"{nameof(MtCoreTests)}-{nameof(SpecialLiquidation_PositionsLiquidated_EventsGenerated)}",
+                    CorrelationId = correlationId,
+                });
+
+            //7. Await Special Liquidation succeeds
+            await RabbitUtil.WaitForMessage<SpecialLiquidationFinishedEvent>(lfe => true);
+            var liquidationFinishedEvent = await RabbitUtil.WaitForMessage<LiquidationFinishedEvent>(
+                lfe => lfe.OperationId == correlationId);
+            liquidationFinishedEvent.Should().Match((LiquidationFinishedEvent lfe) =>
+                lfe.LiquidationType == LiquidationTypeContract.Forced
+                && lfe.OpenPositionsRemainingOnAccount == 0);
+            
+            //8. Ensure positions closed
+            var currentPositions = await ClientUtil.PositionsApi.ListAsync(AccountHelpers.GetDefaultAccount);
+            currentPositions.Should().BeEmpty();
+            
+            var positionCloseHistoryEvent1 = await MtCoreHelpers.WaitForPositionHistoryEvent(
+                historyEvents1.position.PositionSnapshot.Id, PositionHistoryTypeContract.Close);
+            await MtCoreHelpers.WaitForOrderHistoryEventByOrderId(positionCloseHistoryEvent1.Deal.OpenTradeId);
+            var positionCloseHistoryEvent2 = await MtCoreHelpers.WaitForPositionHistoryEvent(
+                historyEvents2.position.PositionSnapshot.Id, PositionHistoryTypeContract.Close);
+            await MtCoreHelpers.WaitForOrderHistoryEventByOrderId(positionCloseHistoryEvent2.Deal.OpenTradeId);
+            
+            //9. Close trading history was written
+            var closeTrade1 = await TradingHistoryHelpers.EnsureTrade(historyEvents1.order.OrderSnapshot.Id,
+                orderRequest1.Volume, orderRequest1.InstrumentId);
+            var closeTrade2 = await TradingHistoryHelpers.EnsureTrade(historyEvents2.order.OrderSnapshot.Id,
+                orderRequest2.Volume, orderRequest2.InstrumentId);
+            
+            //10. Deal history was written
+            await TradingHistoryHelpers.EnsureDeal(positionCloseHistoryEvent1.Deal.DealId, openTrade1.Id, closeTrade1.Id);
+            await TradingHistoryHelpers.EnsureDeal(positionCloseHistoryEvent2.Deal.DealId, openTrade2.Id, closeTrade2.Id);
         }
     }
 }

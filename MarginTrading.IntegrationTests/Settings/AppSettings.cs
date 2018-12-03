@@ -7,6 +7,8 @@ namespace MarginTrading.IntegrationTests.Settings
     {
         public IntegrationTestSettings IntegrationTestSettings { get; set; }
         
+        public BackendSettings MtBackend { get; set; }
+        
         public ClientSettings AccountManagementClient { get; set; }
         
         public ClientSettings MtCoreClient { get; set; }
