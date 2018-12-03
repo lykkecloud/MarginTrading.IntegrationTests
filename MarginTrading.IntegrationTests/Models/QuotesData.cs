@@ -35,5 +35,12 @@ namespace MarginTrading.IntegrationTests.Models
             asks: new List<VolumePrice> {new VolumePrice(5, 100)}, 
             bids: new List<VolumePrice> {new VolumePrice(4, 100)},
             timestamp: DateTime.UtcNow);
+        
+        public static OrderBook GetLowLiquidityOrderBook() => new OrderBook(
+            source: "FakeExchange", 
+            assetPairId: SettingHelpers.GetInstrumentId,
+            asks: new List<VolumePrice> {new VolumePrice(11, 50)}, 
+            bids: new List<VolumePrice> {new VolumePrice(10, 50)},
+            timestamp: DateTime.UtcNow);
     }
 }
