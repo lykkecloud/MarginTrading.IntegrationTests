@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common.Extensions;
 using Lykke.RabbitMqBroker.Publisher;
+using Lykke.RabbitMqBroker.Subscriber;
 using MarginTrading.IntegrationTests.Settings;
 
 namespace MarginTrading.IntegrationTests.Infrastructure
@@ -68,11 +69,22 @@ namespace MarginTrading.IntegrationTests.Infrastructure
             }, false, MessageHandler, RabbitMqService.GetJsonDeserializer<T>());
         }
 
-        public static RabbitMqPublisher<TMessage> GetProducer<TMessage>(RabbitConnectionSettings settings, bool isJson = true)
+        public static RabbitMqPublisher<TMessage> GetProducer<TMessage>(RabbitConnectionSettings settings, 
+            bool isDurable = false, bool isJson = true, bool isTopic = true)
         {
-            return _rabbitMqService.GetProducer(settings, false, isJson
-                ? RabbitMqService.GetJsonSerializer<TMessage>()
-                : RabbitMqService.GetMsgPackSerializer<TMessage>());
+            return _rabbitMqService.GetProducer(settings, isDurable,
+                isJson
+                    ? RabbitMqService.GetJsonSerializer<TMessage>()
+                    : RabbitMqService.GetMsgPackSerializer<TMessage>(),
+                isTopic
+                    ? new RabbitMqService.TopicPublishStrategy(isDurable)
+                    : (IRabbitMqPublishStrategy) new DefaultFanoutPublishStrategy(new RabbitMqSubscriptionSettings
+                    {
+                        ConnectionString = settings.ConnectionString,
+                        ExchangeName = settings.ExchangeName,
+                        IsDurable = isDurable,
+                        RoutingKey = settings.RoutingKey,
+                    }));
         }
 
         public static void TearDown()

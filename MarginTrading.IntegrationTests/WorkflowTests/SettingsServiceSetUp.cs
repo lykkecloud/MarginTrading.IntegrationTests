@@ -68,6 +68,9 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
 
         private static async Task RemoveAll()
         {
+            await MtCoreHelpers.EnsureAllPositionsClosed();
+            
+            //todo gracefully handle exceptions on delete
             //Remove TradingInstruments
             await MtSettingsHelper.RemoveTradingInstruments();
             //Remove AssetPairs
@@ -88,6 +91,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
 //            //testing is done via OneTime handlers
 //        }
         
+        //todo On each item creation/modification event should be generated, and consumed by MTCore.
         //todo add test ScheduleSettings compiled list
         //todo add test ScheduleSettings -> backend compiled correctly
     }

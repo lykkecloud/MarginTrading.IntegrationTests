@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 namespace MarginTrading.IntegrationTests.Infrastructure.Refit
 {
     [UsedImplicitly]
-    public class MtBackendErrorResponse
+    public class LykkeErrorResponse
     {
         public string ErrorMessage { get; set; }
 
