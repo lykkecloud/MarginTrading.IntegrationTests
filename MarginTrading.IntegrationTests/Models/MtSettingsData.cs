@@ -28,7 +28,7 @@ namespace MarginTrading.IntegrationTests.Models
                 Id = "IT_AssetPair1", 
                 Name = "IT_AssetPair1", 
                 BaseAssetId = "IT_Asset1", 
-                QuoteAssetId = "IT_Asset3", 
+                QuoteAssetId = "EUR", 
                 Accuracy = 5,
                 MarketId = "IT_Market1",
                 LegalEntity = SettingsUtil.Settings.IntegrationTestSettings.Behavior.LegalEntity,
@@ -41,7 +41,20 @@ namespace MarginTrading.IntegrationTests.Models
                 Id = "IT_AssetPair2", 
                 Name = "IT_AssetPair2", 
                 BaseAssetId = "IT_Asset2", 
-                QuoteAssetId = "IT_Asset3", 
+                QuoteAssetId = "EUR", 
+                Accuracy = 6,
+                MarketId = "IT_Market1",
+                LegalEntity = SettingsUtil.Settings.IntegrationTestSettings.Behavior.LegalEntity,
+                MatchingEngineMode = SettingsUtil.Settings.IntegrationTestSettings.Behavior.MatchingEngineMode,
+                StpMultiplierMarkupBid = 1,
+                StpMultiplierMarkupAsk = 1
+            };
+            yield return new AssetPairContract
+            {
+                Id = "IT_AssetPair3", 
+                Name = "IT_AssetPair3", 
+                BaseAssetId = "IT_Asset3", 
+                QuoteAssetId = "EUR", 
                 Accuracy = 6,
                 MarketId = "IT_Market1",
                 LegalEntity = SettingsUtil.Settings.IntegrationTestSettings.Behavior.LegalEntity,
@@ -62,6 +75,18 @@ namespace MarginTrading.IntegrationTests.Models
             yield return new ScheduleSettingsContract
             {
                 Id = "IT_ScheduleSettings1",
+                Rank = 100000,
+                AssetPairRegex = null,
+                AssetPairs = new [] {"IT_AssetPair1"}.ToHashSet(),
+                MarketId = "IT_Market1",
+                IsTradeEnabled = true,
+                PendingOrdersCutOff = null,
+                Start = new ScheduleConstraintContract { DayOfWeek = DayOfWeek.Monday, Time = TimeSpan.FromHours(0)},
+                End = new ScheduleConstraintContract { DayOfWeek = DayOfWeek.Sunday, Time = new TimeSpan(23,59,59)},
+            };
+            yield return new ScheduleSettingsContract
+            {
+                Id = "IT_ScheduleSettings2",
                 Rank = 1,
                 AssetPairRegex = null,
                 AssetPairs = new [] {"IT_AssetPair1"}.ToHashSet(),
@@ -91,7 +116,7 @@ namespace MarginTrading.IntegrationTests.Models
                 CommissionRate = 0.001M,
                 CommissionMin = 9.95M,
                 CommissionMax = 69,
-                CommissionCurrency = "IT_Asset3",
+                CommissionCurrency = "EUR",
             };
             yield return new TradingInstrumentContract
             {
@@ -109,7 +134,7 @@ namespace MarginTrading.IntegrationTests.Models
                 CommissionRate = 0.001M,
                 CommissionMin = 9.95M,
                 CommissionMax = 69,
-                CommissionCurrency = "IT_Asset3",
+                CommissionCurrency = "EUR",
             };
         }
 

@@ -5,16 +5,17 @@ using Newtonsoft.Json;
 
 namespace MarginTrading.IntegrationTests.Models
 {
-    [MessagePackObject(false)]
+    [MessagePackObject]
     public sealed class OrderBook : IKeyedObject, ICloneable
     {
-        public OrderBook(string source, string assetPairId, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids, DateTime timestamp)
+        public OrderBook(string source, string assetPairId, DateTime timestamp, 
+            IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids)
         {
             Source = source;
             AssetPairId = assetPairId;
+            Timestamp = timestamp;
             Asks = asks;
             Bids = bids;
-            Timestamp = timestamp;
         }
 
         [JsonProperty("source")]
@@ -38,14 +39,16 @@ namespace MarginTrading.IntegrationTests.Models
         public IReadOnlyCollection<VolumePrice> Bids { get; }
 
         [JsonIgnore]
+        [IgnoreMember]
         public string Key => $"{Source}_{AssetPairId}";
 
         public object Clone()
         {
-            return new OrderBook(Source, AssetPairId, Asks, Bids, Timestamp);
+            return new OrderBook(Source, AssetPairId, Timestamp, Asks, Bids);
         }
     }
 
+    [MessagePackObject]
     public sealed class VolumePrice
     {
         public VolumePrice(decimal price, decimal volume)

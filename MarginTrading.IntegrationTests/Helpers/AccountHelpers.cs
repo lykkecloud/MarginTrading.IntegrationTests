@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using MarginTrading.AccountsManagement.Contracts.Api;
+using MarginTrading.AccountsManagement.Contracts.Commands;
 using MarginTrading.AccountsManagement.Contracts.Events;
 using MarginTrading.AccountsManagement.Contracts.Models;
 using MarginTrading.IntegrationTests.Infrastructure;
@@ -70,6 +71,21 @@ namespace MarginTrading.IntegrationTests.Helpers
         public static Task<AccountContract> GetAccount(string accountId = null)
         {
             return ClientUtil.AccountsApi.GetById(accountId ?? GetDefaultAccount);
+        }
+
+        public static async Task WaitForCommission(string accountId, string assetPairId,
+            AccountBalanceChangeReasonTypeContract type)
+        {
+            await RabbitUtil.WaitForMessage<ChangeBalanceCommand>(m =>
+                m.AssetPairId == assetPairId
+                && m.AccountId == accountId
+                && m.ReasonType == type);
+            
+            await RabbitUtil.WaitForMessage<AccountChangedEvent>(m =>
+                m.Account.Id == accountId
+                && m.EventType == AccountChangedEventTypeContract.BalanceUpdated
+                && m.BalanceChange?.Instrument == assetPairId
+                && m.BalanceChange?.ReasonType == type);
         }
     }
 }
