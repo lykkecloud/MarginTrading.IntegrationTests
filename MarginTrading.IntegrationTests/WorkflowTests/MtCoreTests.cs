@@ -138,7 +138,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
                 orderRequest.Volume);
 
             //6. Trade history was written
-            var openTrade = await TradingHistoryHelpers.EnsureTrade(historyEvents.order.OrderSnapshot.Id, 
+            await TradingHistoryHelpers.EnsureTrade(historyEvents.order.OrderSnapshot.Id, 
                 orderRequest.Volume, tradingInstrument.Instrument);
 
             //7. Clean up
@@ -188,6 +188,10 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             
             //9. Deal history was written
             await TradingHistoryHelpers.EnsureDeal(positionCloseHistoryEvent.Deal.DealId, openTrade.Id, closeTrade.Id);
+            
+            //10. Commissions charged
+            await AccountHelpers.WaitForCommission(accountStat.AccountId, tradingInstrument.Instrument,
+                AccountBalanceChangeReasonTypeContract.Commission);
         }
 
         [Test]
@@ -233,6 +237,10 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             
             //9. Deal history was written
             await TradingHistoryHelpers.EnsureDeal(positionCloseHistoryEvent.Deal.DealId, openTrade.Id, closeTrade.Id);
+            
+            //10. Commissions charged
+            await AccountHelpers.WaitForCommission(accountStat.AccountId, tradingInstrument.Instrument,
+                AccountBalanceChangeReasonTypeContract.Commission);
         }
 
         [Test]
@@ -376,6 +384,10 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             //8. Deal history was written
             await TradingHistoryHelpers.EnsureDeal(positionCloseHistoryEvent1.Deal.DealId, openTrade1.Id, closeTrade1.Id);
             await TradingHistoryHelpers.EnsureDeal(positionCloseHistoryEvent2.Deal.DealId, openTrade2.Id, closeTrade2.Id);
+            
+            //9. Commissions charged
+            await AccountHelpers.WaitForCommission(accountStat.AccountId, tradingInstrument.Instrument,
+                AccountBalanceChangeReasonTypeContract.Commission);
         }
 
         [Test]
