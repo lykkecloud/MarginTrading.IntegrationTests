@@ -11,8 +11,7 @@ using NUnit.Framework;
 namespace MarginTrading.IntegrationTests.WorkflowTests
 {
     [SetUpFixture]
-    //[TestFixture]
-    public class SettingsServiceSetUp
+    public class SetUp
     {
         private readonly IntegrationTestSettings _settings = SettingsUtil.Settings.IntegrationTestSettings;
 
@@ -69,6 +68,8 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         private static async Task RemoveAll()
         {
             await MtCoreHelpers.EnsureAllPositionsClosed();
+
+            await SqlHelper.ClearHistoryTables();
             
             //todo gracefully handle exceptions on delete
             //Remove TradingInstruments

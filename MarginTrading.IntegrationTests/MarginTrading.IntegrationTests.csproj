@@ -10,6 +10,7 @@
     <Copy SourceFiles="appsettings.dev.json" DestinationFolder="$(OutDir)" ContinueOnError="true" />
   </Target>
   <ItemGroup>
+    <PackageReference Include="Dapper" Version="1.50.5" />
     <PackageReference Include="FluentAssertions" Version="5.4.2" />
     <PackageReference Include="JetBrains.Annotations" Version="2018.2.1" />
     <PackageReference Include="Lykke.Common" Version="7.0.1" />
