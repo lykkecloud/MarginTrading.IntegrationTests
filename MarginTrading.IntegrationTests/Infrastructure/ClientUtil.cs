@@ -1,5 +1,6 @@
 ﻿using System;
 using Lykke.HttpClientGenerator;
+using Lykke.MarginTrading.CommissionService.Contracts;
 using MarginTrading.Backend.Contracts;
 using MarginTrading.IntegrationTests.Infrastructure.Refit;
 using MarginTrading.IntegrationTests.Settings;
@@ -15,6 +16,7 @@ namespace MarginTrading.IntegrationTests.Infrastructure
         private const string MtCore = "MT Core Backend Service";
         private const string SettingsService = "MT Settings Service";
         private const string TradingHistory = "MT Trading History Service";
+        private const string CommissionService = "MT Commission Service";
         
         public static IAccountsApi AccountsApi { get; } = GetApi<IAccountsApi, LykkeErrorResponse>
             (SettingsUtil.Settings.AccountManagementClient, AccountManagement);
@@ -49,13 +51,19 @@ namespace MarginTrading.IntegrationTests.Infrastructure
             GetApi<IOrderEventsApi, LykkeErrorResponse>(SettingsUtil.Settings.TradingHistoryClient, TradingHistory);
         public static ITradesApi TradesApi { get; } = 
             GetApi<ITradesApi, LykkeErrorResponse>(SettingsUtil.Settings.TradingHistoryClient, TradingHistory);
+        
+        public static IOvernightSwapApi OvernightSwapApi { get; } =
+            GetApi<IOvernightSwapApi, LykkeErrorResponse>(SettingsUtil.Settings.CommissionServiceClient, CommissionService);
+        public static IDailyPnlApi DailyPnlApi { get; } =
+            GetApi<IDailyPnlApi, LykkeErrorResponse>(SettingsUtil.Settings.CommissionServiceClient, CommissionService);
 
         private static TProxy GetApi<TProxy, TErrorResponse>(ClientSettings apiSettings, string serviceName)
             where TErrorResponse: class
         {
             var generatorBuilder = HttpClientGenerator.BuildForUrl(apiSettings.ServiceUrl)
                 .WithServiceName<TErrorResponse>(serviceName)
-                .WithoutCaching().WithoutRetries();
+                .WithoutCaching()
+                .WithoutRetries();
             
             if (!string.IsNullOrEmpty(apiSettings.ApiKey))
             {

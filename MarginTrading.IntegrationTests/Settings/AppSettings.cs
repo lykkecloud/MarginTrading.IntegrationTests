@@ -16,5 +16,7 @@ namespace MarginTrading.IntegrationTests.Settings
         public ClientSettings SettingsServiceClient { get; set; }
         
         public ClientSettings TradingHistoryClient { get; set; }
+        
+        public ClientSettings CommissionServiceClient { get; set; }
     }
 }

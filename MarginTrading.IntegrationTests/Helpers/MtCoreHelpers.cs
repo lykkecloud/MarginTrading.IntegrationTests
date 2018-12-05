@@ -58,7 +58,6 @@ namespace MarginTrading.IntegrationTests.Helpers
             {
                 await ClientUtil.PositionsApi.CloseAsync(openPositionContract.Id, new PositionCloseRequest
                 {
-                    Originator = OriginatorTypeContract.System,
                     Comment = $"Integration test {nameof(EnsureAllPositionsClosed)}",
                 });
 
