@@ -74,7 +74,7 @@ namespace MarginTrading.IntegrationTests.Helpers
         }
 
         public static async Task WaitForCommission(string accountId, string assetPairId,
-            AccountBalanceChangeReasonTypeContract type)
+            AccountBalanceChangeReasonTypeContract type, string orderId = null)
         {
             await RabbitUtil.WaitForMessage<ChangeBalanceCommand>(m =>
                 m.AssetPairId == assetPairId
@@ -85,7 +85,8 @@ namespace MarginTrading.IntegrationTests.Helpers
                 m.Account.Id == accountId
                 && m.EventType == AccountChangedEventTypeContract.BalanceUpdated
                 && m.BalanceChange?.Instrument == assetPairId
-                && m.BalanceChange?.ReasonType == type);
+                && m.BalanceChange?.ReasonType == type
+                && (string.IsNullOrEmpty(orderId) || m.BalanceChange?.EventSourceId == orderId));
         }
     }
 }

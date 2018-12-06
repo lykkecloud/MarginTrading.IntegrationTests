@@ -8,6 +8,7 @@ using Common.Extensions;
 using Lykke.RabbitMqBroker.Publisher;
 using Lykke.RabbitMqBroker.Subscriber;
 using MarginTrading.IntegrationTests.Settings;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace MarginTrading.IntegrationTests.Infrastructure
 {
@@ -93,6 +94,24 @@ namespace MarginTrading.IntegrationTests.Infrastructure
             _rabbitMqService.Dispose();
             
             _rabbitMqService = new RabbitMqService();
+        }
+
+        public static bool EnsureMessageHistoryEmpty(out string trace)
+        {
+            var tradeData = new Dictionary<string, int>();
+
+            foreach (var typedHistory in MessagesHistory)
+            {
+                if (typedHistory.Value.IsEmpty) continue;
+                
+                tradeData.Add(typedHistory.Key.Name, typedHistory.Value.Count);
+                    
+                typedHistory.Value.Clear();
+            }
+
+            trace = string.Join(";", tradeData.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+
+            return tradeData.Select(x => x.Value).Sum() == 0;
         }
 
         private static Task MessageHandler<T>(T message)

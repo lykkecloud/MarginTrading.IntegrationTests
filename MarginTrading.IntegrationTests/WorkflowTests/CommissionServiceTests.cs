@@ -55,10 +55,23 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         [OneTimeTearDown]
         public async Task OneTimeTearDown()
         {
-            //await MtCoreHelpers.EnsureAccountState();
-            
             //dispose listeners
             RabbitUtil.TearDown();
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            Thread.Sleep(2000); //try to wait all the messages to pass
+        }
+
+        [TearDown]
+        public async Task TearDown()
+        {
+            if (!RabbitUtil.EnsureMessageHistoryEmpty(out var trace))
+            {
+                //Assert.Inconclusive($"One of {nameof(CommissionServiceTests)} tests failed: {trace}");
+            }
         }
 
         [Test]
