@@ -71,10 +71,23 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
         [OneTimeTearDown]
         public async Task OneTimeTearDown()
         {
-            //await MtCoreHelpers.EnsureAccountState();
-            
             //dispose listeners
             RabbitUtil.TearDown();
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            Thread.Sleep(2000); //try to wait all the messages to pass
+        }
+
+        [TearDown]
+        public async Task TearDown()
+        {
+            if (!RabbitUtil.EnsureMessageHistoryEmpty(out var trace))
+            {
+                //Assert.Inconclusive($"One of {nameof(MtCoreTests)} tests failed: {trace}");
+            }
         }
 
         [Test]
@@ -135,7 +148,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
 
             //5. Check position is created
             await MtCoreHelpers.EnsurePosition(historyEvents.position.PositionSnapshot.Id, 
-                orderRequest.Volume);
+                accountStat.AccountId, tradingInstrument.Instrument, orderRequest.Volume);
 
             //6. Trade history was written
             await TradingHistoryHelpers.EnsureTrade(historyEvents.order.OrderSnapshot.Id, 
@@ -167,7 +180,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
 
             //5. Check position is created
             var position = await MtCoreHelpers.EnsurePosition(openHistoryEvents.position.PositionSnapshot.Id, 
-                orderRequest.Volume);
+                accountStat.AccountId, tradingInstrument.Instrument, orderRequest.Volume);
             
             //6. Change rates that SL is executed
             await _quotePublisher.ProduceAsync(QuotesData.GetMuchLowerOrderBook());
@@ -216,7 +229,7 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
 
             //5. Check position is created
             var position = await MtCoreHelpers.EnsurePosition(historyEvents.position.PositionSnapshot.Id, 
-                orderRequest.Volume);
+                accountStat.AccountId, tradingInstrument.Instrument, orderRequest.Volume);
             
             //6. Change rates that TP is executed
             await _quotePublisher.ProduceAsync(QuotesData.GetHigherOrderBook());
@@ -264,7 +277,8 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             var historyEvents = await TradingHistoryHelpers.WaitForHistoryEvents(orderRequest.CorrelationId);
 
             //5. Check position is created
-            await MtCoreHelpers.EnsurePosition(historyEvents.position.PositionSnapshot.Id, orderRequest.Volume);
+            await MtCoreHelpers.EnsurePosition(historyEvents.position.PositionSnapshot.Id, 
+                accountStat.AccountId, tradingInstrument.Instrument, orderRequest.Volume);
             
             //6. Change rates to move TS
             await _quotePublisher.ProduceAsync(QuotesData.GetHigherOrderBook());

@@ -75,13 +75,17 @@ namespace MarginTrading.IntegrationTests.Helpers
             }
         }
 
-        public static async Task<OpenPositionContract> EnsurePosition(string id, decimal volume)
+        public static async Task<OpenPositionContract> EnsurePosition(string positionId, string accountId, 
+            string assetPairId, decimal volume)
         {
-            var position = await ClientUtil.PositionsApi.GetAsync(id);
+            var position = await ClientUtil.PositionsApi.GetAsync(positionId);
             
-            position.Should().Match((OpenPositionContract opc) => opc.Id == id
+            position.Should().Match((OpenPositionContract opc) => opc.Id == positionId
                                                                   && opc.CurrentVolume == volume
                                                                   && opc.Direction == PositionDirectionContract.Long);
+            
+            await AccountHelpers.WaitForCommission(accountId, assetPairId,
+                AccountBalanceChangeReasonTypeContract.Commission);
 
             return position;
         }

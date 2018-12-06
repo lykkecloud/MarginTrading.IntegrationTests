@@ -38,17 +38,26 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             Thread.Sleep(_settings.MessagingDelay);
         }
 
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            //dispose listeners
+            RabbitUtil.TearDown();
+        }
+
         [SetUp]
         public void SetUp()
         {
             Thread.Sleep(2000); //try to wait all the messages to pass
         }
 
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
+        [TearDown]
+        public async Task TearDown()
         {
-            //dispose listeners
-            RabbitUtil.TearDown();
+            if (!RabbitUtil.EnsureMessageHistoryEmpty(out var trace))
+            {
+                //Assert.Inconclusive($"One of {nameof(AccountManagementTests)} tests failed: {trace}");
+            }
         }
 
         #region Create account
