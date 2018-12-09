@@ -59,15 +59,11 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             RabbitUtil.TearDown();
         }
 
-        [SetUp]
-        public void SetUp()
-        {
-            Thread.Sleep(2000); //try to wait all the messages to pass
-        }
-
         [TearDown]
         public async Task TearDown()
         {
+            Thread.Sleep(_settings.MessagingDelay / 5); //try to wait all the messages to pass
+            
             if (!RabbitUtil.EnsureMessageHistoryEmpty(out var trace))
             {
                 //Assert.Inconclusive($"One of {nameof(CommissionServiceTests)} tests failed: {trace}");
