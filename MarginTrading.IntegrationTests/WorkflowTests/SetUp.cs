@@ -74,14 +74,14 @@ namespace MarginTrading.IntegrationTests.WorkflowTests
             //todo gracefully handle exceptions on delete
             //Remove TradingInstruments
             await MtSettingsHelper.RemoveTradingInstruments();
+            //Remove ScheduleSettings
+            await MtSettingsHelper.RemoveScheduleSettings();
             //Remove AssetPairs
             await MtSettingsHelper.RemoveAssetPairs();
             //Remove Markets
             await MtSettingsHelper.RemoveMarkets();
             //Remove Assets
             await MtSettingsHelper.RemoveAssets();
-            //Remove ScheduleSettings
-            await MtSettingsHelper.RemoveScheduleSettings();
             //Remove TradingRoutes
             await MtSettingsHelper.RemoveTradingRoutes();
         }
