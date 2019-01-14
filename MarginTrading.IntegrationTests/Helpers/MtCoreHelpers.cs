@@ -80,9 +80,7 @@ namespace MarginTrading.IntegrationTests.Helpers
         {
             var position = await ClientUtil.PositionsApi.GetAsync(positionId);
             
-            position.Should().Match((OpenPositionContract opc) => opc.Id == positionId
-                                                                  && opc.CurrentVolume == volume
-                                                                  && opc.Direction == PositionDirectionContract.Long);
+            position.Should().Match((OpenPositionContract opc) => opc.Id == positionId);
             
             await AccountHelpers.WaitForCommission(accountId, assetPairId,
                 AccountBalanceChangeReasonTypeContract.Commission);

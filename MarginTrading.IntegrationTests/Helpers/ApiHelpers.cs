@@ -22,17 +22,5 @@ namespace MarginTrading.IntegrationTests.Helpers
                     x => TimeSpan.FromMilliseconds(
                         SettingsUtil.Settings.IntegrationTestSettings.Behavior.ApiCallRetryPeriodMs));
         }
-
-        /// <summary>
-        /// Policy to call API method a number of times with retry awaiting period ignoring Refit ApiException.
-        /// </summary>
-        public static RetryPolicy GetRefitRetryPolicy()
-        {
-            return Policy.Handle<Refit.ApiException>()
-                .WaitAndRetryAsync(SettingsUtil.Settings.IntegrationTestSettings.Behavior.ApiCallRetries,
-                    x => TimeSpan.FromMilliseconds(
-                        SettingsUtil.Settings.IntegrationTestSettings.Behavior.ApiCallRetryPeriodMs));
-        }
-        
     }
 }

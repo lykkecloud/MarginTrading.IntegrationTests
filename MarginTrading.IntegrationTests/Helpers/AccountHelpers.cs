@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MarginTrading.AccountsManagement.Contracts.Api;
 using MarginTrading.AccountsManagement.Contracts.Commands;
@@ -35,9 +36,9 @@ namespace MarginTrading.IntegrationTests.Helpers
             if (account.Balance != neededBalance)
             {
                 await ChargeManually(neededBalance - account.Balance, accountId);
-                account = new AccountContract(account.Id, account.ClientId, account.TradingConditionId, 
-                    account.BaseAssetId, neededBalance, account.WithdrawTransferLimit, account.LegalEntity,
-                    account.IsDisabled, account.ModificationTimestamp, account.IsWithdrawalDisabled);
+                account = await ClientUtil.AccountsApi.GetById(accountId);
+                if (account.Balance != neededBalance) 
+                    throw new Exception($"{nameof(EnsureAccountState)} failed to set needed balance for [{handlingAccountId}]");
             }
 
             if (account.IsDisabled)
@@ -51,7 +52,7 @@ namespace MarginTrading.IntegrationTests.Helpers
             return account;
         }
 
-        public static async Task ChargeManually(decimal delta, string accountId = null)
+        public static async Task<AccountContract> ChargeManually(decimal delta, string accountId = null)
         {
             var handlingAccountId = accountId ?? GetDefaultAccount;
 
@@ -65,7 +66,10 @@ namespace MarginTrading.IntegrationTests.Helpers
                     EventSourceId = Guid.NewGuid().ToString(),
                 });
 
-            await RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange?.Id == operationId);
+            var accountChangedEvent =
+                await RabbitUtil.WaitForMessage<AccountChangedEvent>(m => m.BalanceChange?.Id == operationId);
+
+            return accountChangedEvent.Account;
         }
 
         public static Task<AccountContract> GetAccount(string accountId = null)
