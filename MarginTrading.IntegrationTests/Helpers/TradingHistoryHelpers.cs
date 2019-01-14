@@ -35,8 +35,7 @@ namespace MarginTrading.IntegrationTests.Helpers
 
             var deal = await ApiHelpers
                 .GetRefitRetryPolicy<DealContract>(d => d.OpenTradeId == openTradeId
-                                                        && (string.IsNullOrEmpty(closeTradeId) ||
-                                                            d.CloseTradeId == closeTradeId))
+                                                        && d.CloseTradeId == closeTradeId)
                 .ExecuteAsync(async ct =>
                     await ClientUtil.DealsApi.ById(dealId), CancellationToken.None);
 
