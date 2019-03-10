@@ -6,5 +6,11 @@ namespace MarginTrading.IntegrationTests.Settings
     public class RabbitMqSettings
     {
         public RabbitConnectionSettings OrderHistory { get; set; }
+        
+        public RabbitConnectionSettings PositionHistory { get; set; }
+        
+        public RabbitConnectionSettings SettingsChanged { get; set; }
+        
+        public RabbitConnectionSettings FakeOrderBook { get; set; }
     }
 }

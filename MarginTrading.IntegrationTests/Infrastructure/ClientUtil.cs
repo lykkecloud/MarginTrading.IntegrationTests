@@ -1,5 +1,8 @@
-﻿using Lykke.HttpClientGenerator;
+﻿using System;
+using Lykke.HttpClientGenerator;
+using Lykke.MarginTrading.CommissionService.Contracts;
 using MarginTrading.Backend.Contracts;
+using MarginTrading.IntegrationTests.Infrastructure.Refit;
 using MarginTrading.IntegrationTests.Settings;
 using MarginTrading.SettingsService.Contracts;
 using MarginTrading.TradingHistory.Client;
@@ -9,30 +12,65 @@ namespace MarginTrading.IntegrationTests.Infrastructure
 {
     public static class ClientUtil
     {
-        public static IAccountsApi AccountsApi { get; } =
-            GetApi<IAccountsApi>(SettingsUtil.Settings.AccountManagementClient);
-
-        public static IOrdersApi OrdersApi { get; } = GetApi<IOrdersApi>(SettingsUtil.Settings.MtCoreClient);
-        public static IPositionsApi PositionsApi { get; } = GetApi<IPositionsApi>(SettingsUtil.Settings.MtCoreClient);
-        public static IPricesApi PricesApi { get; } = GetApi<IPricesApi>(SettingsUtil.Settings.MtCoreClient);
+        private const string AccountManagement = "MT Account Management Service";
+        private const string MtCore = "MT Core Backend Service";
+        private const string SettingsService = "MT Settings Service";
+        private const string TradingHistory = "MT Trading History Service";
+        private const string CommissionService = "MT Commission Service";
         
-        public static IAssetPairsApi AssetPairsApi { get; } = GetApi<IAssetPairsApi>(SettingsUtil.Settings.SettingsServiceClient);
-        public static IAssetsApi AssetsApi { get; } = GetApi<IAssetsApi>(SettingsUtil.Settings.SettingsServiceClient);
-        public static IMarketsApi MarketsApi { get; } = GetApi<IMarketsApi>(SettingsUtil.Settings.SettingsServiceClient);
-        public static IScheduleSettingsApi ScheduleSettingsApi { get; } = GetApi<IScheduleSettingsApi>(SettingsUtil.Settings.SettingsServiceClient);
-        public static ITradingConditionsApi TradingConditionsApi { get; } = GetApi<ITradingConditionsApi>(SettingsUtil.Settings.SettingsServiceClient);
-        public static ITradingInstrumentsApi TradingInstrumentsApi { get; } = GetApi<ITradingInstrumentsApi>(SettingsUtil.Settings.SettingsServiceClient);
-        public static ITradingRoutesApi TradingRoutesApi { get; } = GetApi<ITradingRoutesApi>(SettingsUtil.Settings.SettingsServiceClient);
-        
-        public static IDealsApi DealsApi { get; } = GetApi<IDealsApi>(SettingsUtil.Settings.SettingsServiceClient);
-        public static IOrderEventsApi OrderEventsApi { get; } = GetApi<IOrderEventsApi>(SettingsUtil.Settings.SettingsServiceClient);
-        public static ITradesApi TradesApi { get; } = GetApi<ITradesApi>(SettingsUtil.Settings.SettingsServiceClient);
+        public static IAccountsApi AccountsApi { get; } = GetApi<IAccountsApi, LykkeErrorResponse>
+            (SettingsUtil.Settings.AccountManagementClient, AccountManagement);
 
-        private static T GetApi<T>(ClientSettings apiSettings)
+        public static Backend.Contracts.IAccountsApi AccountsStatApi { get; } = 
+            GetApi<Backend.Contracts.IAccountsApi, LykkeErrorResponse>(SettingsUtil.Settings.MtCoreClient, MtCore);
+        public static IOrdersApi OrdersApi { get; } = 
+            GetApi<IOrdersApi, LykkeErrorResponse>(SettingsUtil.Settings.MtCoreClient, MtCore);
+        public static IPositionsApi PositionsApi { get; } = 
+            GetApi<IPositionsApi, LykkeErrorResponse>(SettingsUtil.Settings.MtCoreClient, MtCore);
+        public static IPricesApi PricesApi { get; } = 
+            GetApi<IPricesApi, LykkeErrorResponse>(SettingsUtil.Settings.MtCoreClient, MtCore);
+        
+        public static IAssetPairsApi AssetPairsApi { get; } = 
+            GetApi<IAssetPairsApi, LykkeErrorResponse>(SettingsUtil.Settings.SettingsServiceClient, SettingsService);
+        public static IAssetsApi AssetsApi { get; } = 
+            GetApi<IAssetsApi, LykkeErrorResponse>(SettingsUtil.Settings.SettingsServiceClient, SettingsService);
+        public static IMarketsApi MarketsApi { get; } = 
+            GetApi<IMarketsApi, LykkeErrorResponse>(SettingsUtil.Settings.SettingsServiceClient, SettingsService);
+        public static IScheduleSettingsApi ScheduleSettingsApi { get; } = 
+            GetApi<IScheduleSettingsApi, LykkeErrorResponse>(SettingsUtil.Settings.SettingsServiceClient, SettingsService);
+        public static ITradingConditionsApi TradingConditionsApi { get; } = 
+            GetApi<ITradingConditionsApi, LykkeErrorResponse>(SettingsUtil.Settings.SettingsServiceClient, SettingsService);
+        public static ITradingInstrumentsApi TradingInstrumentsApi { get; } = 
+            GetApi<ITradingInstrumentsApi, LykkeErrorResponse>(SettingsUtil.Settings.SettingsServiceClient, SettingsService);
+        public static ITradingRoutesApi TradingRoutesApi { get; } = 
+            GetApi<ITradingRoutesApi, LykkeErrorResponse>(SettingsUtil.Settings.SettingsServiceClient, SettingsService);
+        
+        public static IDealsApi DealsApi { get; } = 
+            GetApi<IDealsApi, LykkeErrorResponse>(SettingsUtil.Settings.TradingHistoryClient, TradingHistory);
+        public static IOrderEventsApi OrderEventsApi { get; } = 
+            GetApi<IOrderEventsApi, LykkeErrorResponse>(SettingsUtil.Settings.TradingHistoryClient, TradingHistory);
+        public static ITradesApi TradesApi { get; } = 
+            GetApi<ITradesApi, LykkeErrorResponse>(SettingsUtil.Settings.TradingHistoryClient, TradingHistory);
+        
+        public static IOvernightSwapApi OvernightSwapApi { get; } =
+            GetApi<IOvernightSwapApi, LykkeErrorResponse>(SettingsUtil.Settings.CommissionServiceClient, CommissionService);
+        public static IDailyPnlApi DailyPnlApi { get; } =
+            GetApi<IDailyPnlApi, LykkeErrorResponse>(SettingsUtil.Settings.CommissionServiceClient, CommissionService);
+
+        private static TProxy GetApi<TProxy, TErrorResponse>(ClientSettings apiSettings, string serviceName)
+            where TErrorResponse: class
         {
-            var generator = HttpClientGenerator.BuildForUrl(apiSettings.ServiceUrl)
-                .WithoutCaching().WithoutRetries().Create();
-            return generator.Generate<T>();
+            var generatorBuilder = HttpClientGenerator.BuildForUrl(apiSettings.ServiceUrl)
+                .WithServiceName<TErrorResponse>(serviceName)
+                .WithoutCaching()
+                .WithoutRetries();
+            
+            if (!string.IsNullOrEmpty(apiSettings.ApiKey))
+            {
+                generatorBuilder = generatorBuilder.WithApiKey(apiSettings.ApiKey);
+            }
+            
+            return generatorBuilder.Create().Generate<TProxy>();
         }
     }
 }

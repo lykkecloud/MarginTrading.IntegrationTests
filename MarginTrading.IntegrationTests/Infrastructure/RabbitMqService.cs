@@ -40,28 +40,28 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                 stoppable.Value.Stop();
         }
 
-        public IRabbitMqSerializer<TMessage> GetJsonSerializer<TMessage>()
+        public static IRabbitMqSerializer<TMessage> GetJsonSerializer<TMessage>()
         {
             return new JsonMessageSerializer<TMessage>(Encoding.UTF8, JsonSerializerSettings);
         }
 
-        public IRabbitMqSerializer<TMessage> GetMsgPackSerializer<TMessage>()
+        public static IRabbitMqSerializer<TMessage> GetMsgPackSerializer<TMessage>()
         {
             return new MessagePackMessageSerializer<TMessage>();
         }
 
-        public IMessageDeserializer<TMessage> GetJsonDeserializer<TMessage>()
+        public static IMessageDeserializer<TMessage> GetJsonDeserializer<TMessage>()
         {
             return new JsonMessageDeserializer<TMessage>(JsonSerializerSettings);
         }
 
-        public IMessageDeserializer<TMessage> GetMsgPackDeserializer<TMessage>()
+        public static IMessageDeserializer<TMessage> GetMsgPackDeserializer<TMessage>()
         {
             return new MessagePackMessageDeserializer<TMessage>();
         }
 
         public RabbitMqPublisher<TMessage> GetProducer<TMessage>(RabbitConnectionSettings settings,
-            bool isDurable, IRabbitMqSerializer<TMessage> serializer)
+            bool isDurable, IRabbitMqSerializer<TMessage> serializer, IRabbitMqPublishStrategy publishStrategy)
         {
             var subscriptionSettings = new RabbitMqSubscriptionSettings
             {
@@ -79,23 +79,10 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                 return new Lazy<IStopable>(() => new RabbitMqPublisher<TMessage>(s)
                     .DisableInMemoryQueuePersistence()
                     .SetSerializer(serializer)
-                    .SetPublishStrategy(new TopicPublishStrategy())
+                    .SetPublishStrategy(publishStrategy)
                     .SetLogger(_logger)
                     .PublishSynchronously()
                     .Start());
-            }
-        }
-
-        private class TopicPublishStrategy : IRabbitMqPublishStrategy
-        {
-            public void Configure(RabbitMqSubscriptionSettings settings, IModel channel)
-            {
-                channel.ExchangeDeclare(settings.ExchangeName, "topic", true);
-            }
-
-            public void Publish(RabbitMqSubscriptionSettings settings, IModel channel, RawMessage message)
-            {
-                channel.BasicPublish(settings.ExchangeName, message.RoutingKey, null, message.Body);
             }
         }
 
@@ -149,6 +136,26 @@ namespace MarginTrading.IntegrationTests.Infrastructure
                     return ((obj.ConnectionString != null ? obj.ConnectionString.GetHashCode() : 0) * 397) ^
                            (obj.ExchangeName != null ? obj.ExchangeName.GetHashCode() : 0);
                 }
+            }
+        }
+
+        internal class TopicPublishStrategy : IRabbitMqPublishStrategy
+        {
+            private readonly bool _isDurable;
+            
+            public TopicPublishStrategy(bool isDurable = true)
+            {
+                _isDurable = isDurable;
+            }
+            
+            public void Configure(RabbitMqSubscriptionSettings settings, IModel channel)
+            {
+                channel.ExchangeDeclare(settings.ExchangeName, "topic", _isDurable);
+            }
+
+            public void Publish(RabbitMqSubscriptionSettings settings, IModel channel, RawMessage message)
+            {
+                channel.BasicPublish(settings.ExchangeName, message.RoutingKey, null, message.Body);
             }
         }
     }
